@@ -1,8 +1,10 @@
 from .models import *
 from .serializers import *
-from rest_framework import viewsets
+from rest_framework import status, viewsets
 from rest_framework.response import Response
 from rest_framework.decorators import api_view
+from django.contrib.auth.hashers import check_password
+from rest_framework.views import APIView
 
 
 # Create your views here.
@@ -34,7 +36,35 @@ def estadisticas(request):
     }
 
     return Response(statistics)    
+    
 
+
+class LoginAPIView(APIView):
+    def post(self, request):
+        # Obtener el correo electrónico y la contraseña del cuerpo de la solicitud
+        email = request.data.get('email_account')
+        password = request.data.get('password_account')
+        if not email or not password:
+            return Response({'detail': 'Missing email or password'}, status=status.HTTP_400_BAD_REQUEST)
+
+        # Buscar un usuario con el mismo correo electrónico
+        try:
+            account = Account.objects.get(email_account=email)
+        except Account.DoesNotExist:
+            # Si el usuario no existe, puedes devolver un error
+            return Response({'detail': 'Invalid credentials'}, status=status.HTTP_401_UNAUTHORIZED)
+        except Exception as e:
+            # Manejar otros errores de base de datos u excepciones
+            return Response({'detail': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+        # Verificar si la contraseña coincide
+        if not check_password(password, account.password_account):
+            # Si la contraseña es correcta, devolver el id_account
+            return Response({'detail': 'Invalid credentials'}, status=status.HTTP_401_UNAUTHORIZED)
+        # Si la autenticación es exitosa, devolver el ID de la cuenta
+        return Response({'id_account': account.id_account}, status=status.HTTP_200_OK)
+
+    
 class AccountViewSet(viewsets.ModelViewSet):
     queryset = Account.objects.all()
     serializer_class = AccountSerializer

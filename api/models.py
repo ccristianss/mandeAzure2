@@ -27,7 +27,7 @@ class Account(models.Model):
 
 class User(models.Model):
     id_user            = models.AutoField(primary_key=True)
-    account_id_account = models.ForeignKey('Account', on_delete=models.PROTECT, unique=True)
+    account_id_account = models.OneToOneField('Account', on_delete=models.PROTECT, unique=True)
     image_user         = models.ImageField(upload_to='imgProfiles', null=True, blank=True)
     name_user          = models.CharField(max_length=45)
     lastname_user      = models.CharField(max_length=45)
@@ -70,7 +70,7 @@ class Document(models.Model):
 
 class Mander(models.Model):
     id_mander           = models.AutoField(primary_key=True)
-    user_id_user        = models.ForeignKey('User', on_delete=models.PROTECT, unique=True)
+    user_id_user        = models.OneToOneField('User', on_delete=models.PROTECT, unique=True)
     image_mander        = models.ImageField (upload_to='imgMander',max_length=255, null=False)
     ishavecar_mander    = models.BooleanField()
     ishavemoto_mander   = models.BooleanField()
@@ -121,7 +121,7 @@ class Request(models.Model):
 
 class Requestmanager(models.Model):
     id_requestmanager    = models.AutoField(primary_key=True)
-    request_id_request   = models.ForeignKey('Request', on_delete=models.PROTECT, unique=True)
+    request_id_request   = models.OneToOneField('Request', on_delete=models.PROTECT, unique=True)
     image_requestmanager = models.ImageField(upload_to='imgRequestmanager',max_length=255,null=True,blank=True)
     mander_id_mander     = models.ForeignKey('Mander', on_delete=models.PROTECT)
 
