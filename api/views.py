@@ -35,7 +35,7 @@ class LoginAPIView(APIView):
         # Si la autenticación es exitosa, devolver el ID de la cuenta
         payload = {
             'id': account.id_account,
-            'exp': datetime.datetime.utcnow() + datetime.timedelta(minutes=2),
+            'exp': datetime.datetime.utcnow() + datetime.timedelta(minutes=10),
             'iat': datetime.datetime.utcnow()
         }
 
@@ -52,20 +52,20 @@ class LoginAPIView(APIView):
 class UserView(APIView):
     def get(self, request):
         token = request.COOKIES.get('jwt')
-        print("Token:", token) 
-        token2 = request.headers.get('Authorization')
-        _, token2 = token2.split()
-        print("Token2:", token2) 
+        #print("Token:", token) 
+        #token2 = request.headers.get('Authorization')
+        #_, token2 = token2.split()
+        #print("Token2:", token2) 
         if not token:
             raise AuthenticationFailed('Unauthenticated! no token available')
         try:
             payload = jwt.decode(token, 'manders', algorithms=['HS256'])
-            expiration_timestamp = payload['exp']
-            expiration_date = datetime.datetime.utcfromtimestamp(expiration_timestamp).strftime('%Y-%m-%d %H:%M:%S')
-            print("Expiration:", expiration_date)
-            timestamp = payload['iat']
-            datenow = datetime.datetime.utcfromtimestamp(timestamp).strftime('%Y-%m-%d %H:%M:%S')
-            print("datenow:", datenow)
+            #expiration_timestamp = payload['exp']
+            #expiration_date = datetime.datetime.utcfromtimestamp(expiration_timestamp).strftime('%Y-%m-%d %H:%M:%S')
+            #print("Expiration:", expiration_date)
+            #timestamp = payload['iat']
+            #datenow = datetime.datetime.utcfromtimestamp(timestamp).strftime('%Y-%m-%d %H:%M:%S')
+            #print("datenow:", datenow)
         except jwt.ExpiredSignatureError:
             raise AuthenticationFailed('Unauthenticated! Expired')
 
@@ -79,7 +79,8 @@ class LogoutView(APIView):
         response = Response()
         response.delete_cookie('jwt')
         response.data = {
-            'message': 'success'
+            'message': 'success',
+            'jwt': ''
         }
         return response
 
