@@ -2,7 +2,6 @@ from django.urls import path, include
 from rest_framework import routers
 from .models import *
 from .views import *
-from .import views
 
 router = routers.DefaultRouter()
 router.register(r'account', AccountViewSet)
@@ -16,7 +15,9 @@ router.register(r'vehicle', VehicleViewSet)
 
 urlpatterns = [
     path('api/', include(router.urls)),
-    path('api-auth/', include('rest_framework.urls', namespace='rest_framework')),
+    path('api2/login/', LoginAPIView.as_view(), name='login'),
+    path('api2/user_data/', UserView.as_view(), name='user_data'),
+    path('api2/logout/', LogoutView.as_view(), name='logout'),
     path('api/estadisticas/', estadisticas, name='estadisticas'),
-    path('api/login/', LoginAPIView.as_view(), name='login'),
+    path('api-auth/', include('rest_framework.urls', namespace='rest_framework')),
 ]

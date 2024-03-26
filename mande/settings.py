@@ -89,15 +89,15 @@ WSGI_APPLICATION = 'mande.wsgi.application'
 DATABASES = {
   'default': {
     'ENGINE': 'django.db.backends.postgresql',
-    'NAME': 'dbmandaderoapp',
+    'NAME': 'dbmanderpruebas',
     'USER': 'devingworld',
     'PASSWORD': 'XcQkRjLd32mH',
-    'HOST': 'ep-yellow-brook-a5cprtww.us-east-2.aws.neon.tech',
+    'HOST': 'ep-yellow-brook-a5cprtww-pooler.us-east-2.aws.neon.tech',
     'PORT': '5432',
     'OPTIONS': {
-      'sslmode': 'require',
-      'options': 'endpoint=sweet-fire-89711179'
+      'sslmode': 'require'
     },
+    'DISABLE_SERVER_SIDE_CURSORS': True,
   }
 }
 
