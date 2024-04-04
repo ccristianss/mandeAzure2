@@ -1,0 +1,40 @@
+version: '3'
+
+services:
+  django:
+    build: .
+    command: python manage.py runserver 0.0.0.0:8000
+    ports:
+      - "8000:8000"
+    networks:
+      - mynetwork
+    depends_on:
+      - db2
+
+#  db:
+#    image: mysql
+#    ports: 
+#      - "3306:3306"
+#    command: --default-authentication-plugin=mysql_native_password
+#    environment:
+#      MYSQL_USER: dbmandaderoapp
+#      MYSQL_DATABASE: dbmandaderoapp
+#      MYSQL_PASSWORD: XcQkRjLd32mH
+#      MYSQL_ROOT_PASSWORD: XcQkRjLd32mH 
+#    networks:
+#      - default
+  db2:
+    image: postgres
+#    ports: 
+#      - "5431:5432"
+#    volumes:
+#      - ./database:/var/lib/postgresql/data
+    environment:
+      POSTGRES_USER: devingworld
+      POSTGRES_DB: dbmandaderoapp
+      POSTGRES_PASSWORD: XcQkRjLd32mH
+    networks:
+      - mynetwork
+
+networks:
+  mynetwork:

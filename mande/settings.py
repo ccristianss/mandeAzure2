@@ -92,15 +92,21 @@ DATABASES = {
     'NAME': 'dbmandaderoapp',
     'USER': 'devingworld',
     'PASSWORD': 'XcQkRjLd32mH',
-    'HOST': 'ep-yellow-brook-a5cprtww.us-east-2.aws.neon.tech',
+    'HOST': 'db2',
     'PORT': '5432',
-    'OPTIONS': {
-      'sslmode': 'require',
-      'options': 'endpoint=sweet-fire-89711179'
-    },
   }
 }
 
+#DATABASES = {
+#    'default': {
+#    'ENGINE': 'django.db.backends.mysql',
+#    'NAME': 'dbmandaderoapp',
+#    'USER': 'devingworld',
+#    'PASSWORD': 'XcQkRjLd32mH',
+#    'HOST': 'localhost',
+#    'PORT': '3306',
+#    }
+#}
 
 # Password validation
 # https://docs.djangoproject.com/en/5.0/ref/settings/#auth-password-validators
