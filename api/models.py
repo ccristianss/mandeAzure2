@@ -27,7 +27,7 @@ class Account(models.Model):
 
 class User(models.Model):
     id_user            = models.AutoField(primary_key=True)
-    account_id_account = models.OneToOneField('Account', on_delete=models.PROTECT, unique=True)
+    account_id_account = models.OneToOneField(Account, on_delete=models.PROTECT, unique=True)
     image_user         = models.ImageField(upload_to='imgProfiles', null=True, blank=True)
     name_user          = models.CharField(max_length=45)
     lastname_user      = models.CharField(max_length=45)
@@ -44,10 +44,10 @@ class User(models.Model):
 
 class Document(models.Model):
     id_document         = models.AutoField(primary_key=True)
-    user_id_user = models.ForeignKey('User', on_delete=models.PROTECT)
-    image_document      = models.ImageField(upload_to='imgDocs',max_length=255)
+    user_id_user        = models.ForeignKey(User, on_delete=models.PROTECT)
+    image_document      = models.ImageField(upload_to='imgDocs', null=True, blank=True)
     isdocument_vehicle  = models.BooleanField()
-    isverified_document = models.BooleanField()
+    isverified_document = models.BooleanField(default=False)
 
     DOCUMENT_TYPES = [
         ('CC', 'Cédula de Ciudadanía'),
@@ -64,14 +64,16 @@ class Document(models.Model):
     dateupdate_document   = models.DateTimeField(auto_now=True)
     dateverified_document = models.DateTimeField(null=True)
 
+    def __str__(self):
+        return self.type_document
     class Meta:
         db_table = 'document'
 
 
 class Mander(models.Model):
     id_mander           = models.AutoField(primary_key=True)
-    user_id_user        = models.OneToOneField('User', on_delete=models.PROTECT, unique=True)
-    image_mander        = models.ImageField (upload_to='imgMander',max_length=255, null=False)
+    user_id_user        = models.OneToOneField(User, on_delete=models.PROTECT, unique=True)
+    image_mander        = models.ImageField (upload_to='imgMander', null=True, blank=True)
     ishavecar_mander    = models.BooleanField()
     ishavemoto_mander   = models.BooleanField()
     isactive_mander     = models.BooleanField()
@@ -80,7 +82,8 @@ class Mander(models.Model):
     dateupdate_mander   = models.DateTimeField(auto_now=True)
     address_mander      = models.CharField(max_length=100)
     cc_mander           = models.CharField(max_length=13, unique=True)
-
+    def __str__(self):
+        return self.cc_mander
     class Meta:
         db_table = 'mander'
 
@@ -88,7 +91,7 @@ class Service(models.Model):
     id_service     = models.AutoField(primary_key=True)
     name_service   = models.CharField(max_length=45)
     detail_service = models.CharField(max_length=255)
-    image_service  = models.ImageField(upload_to='imgService',max_length=255)
+    image_service  = models.ImageField(upload_to='imgService', null=True, blank=True)
 
     def __str__(self):
         return self.name_service
@@ -98,8 +101,8 @@ class Service(models.Model):
 
 class Request(models.Model):
     id_request         = models.AutoField(primary_key=True)
-    service_id_service = models.ForeignKey('Service', on_delete=models.PROTECT)
-    user_id_user       = models.ForeignKey('User', on_delete=models.PROTECT)
+    service_id_service = models.ForeignKey(Service, on_delete=models.PROTECT)
+    user_id_user       = models.ForeignKey(User, on_delete=models.PROTECT)
     detail_request     = models.CharField(max_length=255)
 
     STATUS_CHOICES = [
@@ -121,9 +124,9 @@ class Request(models.Model):
 
 class Requestmanager(models.Model):
     id_requestmanager    = models.AutoField(primary_key=True)
-    request_id_request   = models.OneToOneField('Request', on_delete=models.PROTECT, unique=True)
-    image_requestmanager = models.ImageField(upload_to='imgRequestmanager',max_length=255,null=True,blank=True)
-    mander_id_mander     = models.ForeignKey('Mander', on_delete=models.PROTECT)
+    request_id_request   = models.OneToOneField(Request, on_delete=models.PROTECT, unique=True)
+    image_requestmanager = models.ImageField(upload_to='imgRequestmanager', null=True, blank=True)
+    mander_id_mander     = models.ForeignKey(Mander, on_delete=models.PROTECT)
 
     STATUS_CHOICES = [
         ('espera', 'En espera'),
@@ -132,18 +135,20 @@ class Requestmanager(models.Model):
     ]
     status_requestmanager       = models.CharField(max_length=10, choices=STATUS_CHOICES)
 
-    detail_requestmanager       = models.CharField(max_length=45)
+    detail_requestmanager       = models.CharField(max_length=255)
     dateregister_requestmanager = models.DateTimeField(auto_now_add=True)
     dateupdate_requestmanager   = models.DateTimeField(auto_now=True)
 
+    def __str__(self):
+        return self.detail_requestmanager
     class Meta:
         db_table = 'requestmanager'
 
 
 class Vehicle(models.Model):
     id_vehicle          = models.AutoField(primary_key=True)
-    user_id_user = models.ForeignKey('User', on_delete=models.PROTECT)
-    image_vehicle       = models.ImageField(upload_to='imgVehicles', max_length=255, null=True)
+    user_id_user        = models.ForeignKey(User, on_delete=models.PROTECT)
+    image_vehicle       = models.ImageField(upload_to='imgVehicles', null=True, blank=True)
     brand_vehicle       = models.CharField(max_length=20)
     plate_vehicle       = models.CharField(max_length=10, unique=True)
     model_vehicle       = models.CharField(max_length=4)
@@ -162,5 +167,7 @@ class Vehicle(models.Model):
     dateupdate_vehicle   = models.DateTimeField(auto_now=True)
     dateverified_vehicle = models.DateTimeField(auto_now=True)
 
+    def __str__(self):
+        return self.plate_vehicle
     class Meta:
         db_table = 'vehicle'
