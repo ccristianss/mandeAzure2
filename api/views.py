@@ -117,12 +117,24 @@ class AccountViewSet(viewsets.ModelViewSet):
     queryset = Account.objects.all()
     serializer_class = AccountSerializer
 
-    
-
 class UserViewSet(viewsets.ModelViewSet):
     queryset = User.objects.all()  
     serializer_class = UserSerializer
 
+class GetListUserViewSet(viewsets.ViewSet):
+    def list(self, request):
+        queryset = User.objects.select_related('account_id_account')
+        serializer = ListUserSerializer(queryset, many=True)
+        return Response(serializer.data)
+    
+    def retrieve(self, request, pk=None):
+        queryset = User.objects.select_related('account_id_account')
+        user = queryset.filter(account_id_account=pk).first()
+        if user:
+            serializer = ListUserSerializer(user)
+            return Response(serializer.data)
+        else:
+            return Response({"message": "User not found"}, status=404)
 
 class DocumentViewSet(viewsets.ModelViewSet):
     queryset = Document.objects.all()

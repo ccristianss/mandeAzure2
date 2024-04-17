@@ -7,17 +7,17 @@ class AccountSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 class UserSerializer(serializers.ModelSerializer):
-
-    account_id_account = serializers.PrimaryKeyRelatedField(queryset=Account.objects.all(), allow_null=True)
-    
     class Meta:
         model = User
         fields = '__all__'
-        depth=2
 
-        
-        
-    
+class ListUserSerializer(serializers.ModelSerializer):
+    id_account = serializers.PrimaryKeyRelatedField(source='account_id_account', read_only=True)
+    email_account = serializers.CharField(source='account_id_account.email_account', read_only=True)
+    isadmin_account = serializers.BooleanField(source='account_id_account.isadmin_account', read_only=True)
+    class Meta:
+        model = User
+        fields = ['id_user', 'id_account', 'email_account', 'isadmin_account', 'image_user', 'name_user', 'lastname_user', 'phone_user', 'ismander_user']
 
 class DocumentSerializer(serializers.ModelSerializer):
     class Meta:

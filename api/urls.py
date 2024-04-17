@@ -5,13 +5,14 @@ from .views import *
 
 router = routers.DefaultRouter()
 router.register(r'account', AccountViewSet)
-router.register(r'user', UserViewSet)
+router.register(r'user', UserViewSet, basename='user')
 router.register(r'document', DocumentViewSet)
 router.register(r'mander', ManderViewSet)
 router.register(r'service', ServiceViewSet)
 router.register(r'request', RequestViewSet)
 router.register(r'request_manager', RequestManagerViewSet)
 router.register(r'vehicle', VehicleViewSet)
+router.register(r'getlistuser', GetListUserViewSet, basename='getlistuser')
 
 urlpatterns = [
     path('api/', include(router.urls)),

@@ -94,6 +94,11 @@ DATABASES = {
     'PASSWORD': 'XcQkRjLd32mH',
     'HOST': 'db2',
     'PORT': '5432',
+    'OPTIONS': {
+#      'sslmode': 'require',
+#      'options': 'endpoint=sweet-fire-89711179'
+    },
+    'DISABLE_SERVER_SIDE_CURSORS': True,
   }
 }
 
