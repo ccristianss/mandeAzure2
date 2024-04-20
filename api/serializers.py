@@ -62,8 +62,6 @@ class ListRequestManagerManderSerializer(serializers.ModelSerializer):
         model = Requestmanager
         fields = ['id_requestmanager', 'status_requestmanager', 'detail_requestmanager', 'id_request', 'status_request', 'detail_request', 'id_service', 'name_service', 'id_user', 'name_user', 'mander_id_mander', 'name_mander']
         
-        #, 'id_service', 'detail_request', 'status_request', 'id_user', '', '', '', '', ''
-
 class RequestDetailSerializer(serializers.ModelSerializer):
     class Meta:
         model = RequestDetail

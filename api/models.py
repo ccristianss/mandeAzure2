@@ -186,7 +186,7 @@ class RequestDetail(models.Model):
     currentLng = models.FloatField(default=0.0)
     distance = models.IntegerField(default=0)
     time = models.IntegerField(default=0) 
-    points = models.CharField(max_length=255, null=True)
+    points = models.TextField(null=True)
     price = models.FloatField(default=0.0)
 
     def __str__(self):
