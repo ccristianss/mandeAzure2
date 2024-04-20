@@ -16,6 +16,7 @@ router.register(r'getlistuser', GetListUserViewSet, basename='getlistuser')
 router.register(r'listrequestmanagermander', ListRequestManagerManderViewSet, basename='listrequestmanagermander')
 router.register(r'requestdetails', RequestDetailViewset, basename='requestdetails')
 router.register(r'allrequests', RequestAllViewset, basename='allrequests')
+router.register(r'getlistmanders', GetListManderViewSet, basename='getlistmanders')
 
 urlpatterns = [
     path('api/', include(router.urls)),

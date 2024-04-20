@@ -181,3 +181,18 @@ class RequestDetailViewset(viewsets.ModelViewSet):
 class RequestAllViewset(viewsets.ModelViewSet):
     queryset = RequestDetail.objects.all()
     serializer_class = RequestAllSerializer
+
+class GetListManderViewSet(viewsets.ViewSet):
+    def list(self, request):
+        queryset = Mander.objects.select_related('user_id_user')
+        serializer = CustomManderSerializer(queryset, many=True)
+        return Response(serializer.data)
+    
+    def retrieve(self, request, pk=None):
+        queryset = Mander.objects.select_related('user_id_user')
+        mander = queryset.filter(user_id_user=pk).first()
+        if mander:
+            serializer = CustomManderSerializer(mander)
+            return Response(serializer.data)
+        else:
+            return Response({"message": "User not found"}, status=404)
