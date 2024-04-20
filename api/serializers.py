@@ -72,3 +72,9 @@ class RequestAllSerializer(serializers.ModelSerializer):
     class Meta:
         model = RequestDetail
         fields = '__all__'
+
+    def create(self, validated_data):
+        request_data = validated_data.pop('request_id_request')
+        request_instance = Request.objects.create(**request_data)
+        request_detail_instance = RequestDetail.objects.create(request_id_request=request_instance, **validated_data)
+        return request_detail_instance
