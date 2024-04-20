@@ -75,7 +75,7 @@ class Migration(migrations.Migration):
                 ('id_requestmanager', models.AutoField(primary_key=True, serialize=False)),
                 ('image_requestmanager', models.ImageField(blank=True, null=True, upload_to='imgRequestmanager')),
                 ('status_requestmanager', models.CharField(choices=[('espera', 'En espera'), ('proceso', 'En proceso'), ('terminado', 'Terminado')], max_length=10)),
-                ('detail_requestmanager', models.CharField(max_length=255)),
+                ('detail_requestmanager', models.CharField(max_length=45)),
                 ('dateregister_requestmanager', models.DateTimeField(auto_now_add=True)),
                 ('dateupdate_requestmanager', models.DateTimeField(auto_now=True)),
                 ('mander_id_mander', models.ForeignKey(on_delete=django.db.models.deletion.PROTECT, to='api.mander')),

@@ -171,3 +171,25 @@ class Vehicle(models.Model):
         return self.plate_vehicle
     class Meta:
         db_table = 'vehicle'
+
+class RequestDetail(models.Model):
+    id_requestdetail    = models.AutoField(primary_key=True)
+    request_id_request   = models.OneToOneField(Request, on_delete=models.PROTECT, unique=True)
+    origin = models.CharField(max_length=255, null=True)
+    originLat = models.FloatField(default=0.0)
+    originLng = models.FloatField(default=0.0)
+    destination = models.CharField(max_length=255, null=True)
+    destinationLat = models.FloatField(default=0.0)
+    destinationLng = models.FloatField(default=0.0)
+    current = models.CharField(max_length=255, null=True)
+    currentLat = models.FloatField(default=0.0)
+    currentLng = models.FloatField(default=0.0)
+    distance = models.IntegerField(default=0)
+    time = models.IntegerField(default=0) 
+    points = models.CharField(max_length=255, null=True)
+    price = models.FloatField(default=0.0)
+
+    def __str__(self):
+        return self.id_requestdetail
+    class Meta:
+        db_table = 'requestdetail'

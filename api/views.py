@@ -159,3 +159,25 @@ class RequestManagerViewSet(viewsets.ModelViewSet):
 class VehicleViewSet(viewsets.ModelViewSet):
     queryset = Vehicle.objects.all()
     serializer_class = VehicleSerializer
+
+class ListRequestManagerManderViewSet(viewsets.ViewSet):
+    def list(self, request):
+        queryset = Requestmanager.objects.select_related('request_id_request')
+        serializer = ListRequestManagerManderSerializer(queryset, many=True)
+        return Response(serializer.data)
+
+    def retrieve(self, request, pk=None):
+        try:
+            requestmanager = Requestmanager.objects.select_related('request_id_request').filter(mander_id_mander=pk)
+            serializer = ListRequestManagerManderSerializer(requestmanager, many=True)
+            return Response(serializer.data)
+        except Requestmanager.DoesNotExist:
+            return Response({"message": "Requestmanager not found"}, status=404)
+
+class RequestDetailViewset(viewsets.ModelViewSet):
+    queryset = RequestDetail.objects.all()
+    serializer_class = RequestDetailSerializer
+
+class RequestAllViewset(viewsets.ModelViewSet):
+    queryset = RequestDetail.objects.all()
+    serializer_class = RequestAllSerializer

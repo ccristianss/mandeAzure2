@@ -13,6 +13,9 @@ router.register(r'request', RequestViewSet)
 router.register(r'request_manager', RequestManagerViewSet)
 router.register(r'vehicle', VehicleViewSet)
 router.register(r'getlistuser', GetListUserViewSet, basename='getlistuser')
+router.register(r'listrequestmanagermander', ListRequestManagerManderViewSet, basename='listrequestmanagermander')
+router.register(r'requestdetails', RequestDetailViewset, basename='requestdetails')
+router.register(r'allrequests', RequestAllViewset, basename='allrequests')
 
 urlpatterns = [
     path('api/', include(router.urls)),

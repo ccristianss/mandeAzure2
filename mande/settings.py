@@ -89,7 +89,8 @@ WSGI_APPLICATION = 'mande.wsgi.application'
 DATABASES = {
   'default': {
     'ENGINE': 'django.db.backends.postgresql',
-    'NAME': 'dbmandaderoapp',
+    #'NAME': 'dbmandaderoapp',
+    'NAME': 'dbv2',
     'USER': 'devingworld',
     'PASSWORD': 'XcQkRjLd32mH',
     'HOST': 'ep-yellow-brook-a5cprtww.us-east-2.aws.neon.tech',

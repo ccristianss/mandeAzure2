@@ -48,3 +48,29 @@ class VehicleSerializer(serializers.ModelSerializer):
     class Meta:
         model = Vehicle
         fields = '__all__'
+
+class ListRequestManagerManderSerializer(serializers.ModelSerializer):
+    id_request = serializers.PrimaryKeyRelatedField(source='request_id_request', read_only=True)
+    detail_request = serializers.CharField(source='request_id_request.detail_request', read_only=True)
+    status_request = serializers.CharField(source='request_id_request.status_request', read_only=True)
+    name_user = serializers.CharField(source='request_id_request.user_id_user', read_only=True)
+    id_user = serializers.PrimaryKeyRelatedField(source='request_id_request.user_id_user.id_user', read_only=True)
+    name_mander = serializers.CharField(source='mander_id_mander.user_id_user', read_only=True)
+    name_service = serializers.CharField(source='request_id_request.service_id_service', read_only=True)
+    id_service = serializers.PrimaryKeyRelatedField(source='request_id_request.service_id_service.id_service', read_only=True)
+    class Meta:
+        model = Requestmanager
+        fields = ['id_requestmanager', 'status_requestmanager', 'detail_requestmanager', 'id_request', 'status_request', 'detail_request', 'id_service', 'name_service', 'id_user', 'name_user', 'mander_id_mander', 'name_mander']
+        
+        #, 'id_service', 'detail_request', 'status_request', 'id_user', '', '', '', '', ''
+
+class RequestDetailSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = RequestDetail
+        fields = '__all__'
+
+class RequestAllSerializer(serializers.ModelSerializer):
+    request_id_request = RequestSerializer()
+    class Meta:
+        model = RequestDetail
+        fields = '__all__'
