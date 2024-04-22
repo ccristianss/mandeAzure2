@@ -179,6 +179,13 @@ class DocumentViewSet(viewsets.ModelViewSet):
 class ManderViewSet(viewsets.ModelViewSet):
     queryset = Mander.objects.all()
     serializer_class = ManderSerializer
+    
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        iduser = self.request.query_params.get('iduser')
+        if iduser:
+            queryset = queryset.filter(user_id_user=iduser)
+        return queryset
 
 class ServiceViewSet(viewsets.ModelViewSet):
     queryset = Service.objects.all()
