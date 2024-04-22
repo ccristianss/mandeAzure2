@@ -61,7 +61,7 @@ class ListRequestManagerManderSerializer(serializers.ModelSerializer):
     class Meta:
         model = Requestmanager
         fields = ['id_requestmanager', 'status_requestmanager', 'detail_requestmanager', 'id_request', 'status_request', 'detail_request', 'id_service', 'name_service', 'id_user', 'name_user', 'mander_id_mander', 'name_mander']
-        
+
 class RequestDetailSerializer(serializers.ModelSerializer):
     class Meta:
         model = RequestDetail
@@ -78,6 +78,20 @@ class RequestAllSerializer(serializers.ModelSerializer):
         request_instance = Request.objects.create(**request_data)
         request_detail_instance = RequestDetail.objects.create(request_id_request=request_instance, **validated_data)
         return request_detail_instance
+
+    def update(self, instance, validated_data):
+            request_data = validated_data.pop('request_id_request', None)
+            for attr, value in validated_data.items():
+                setattr(instance, attr, value)
+            instance.save()
+
+            if request_data:
+                request_instance = instance.request_id_request
+                for attr, value in request_data.items():
+                    setattr(request_instance, attr, value)
+                request_instance.save()
+
+            return instance
 
 class CustomManderSerializer(serializers.ModelSerializer):
     id_account = serializers.PrimaryKeyRelatedField(source='user_id_user.account_id_account', read_only=True)
@@ -97,3 +111,55 @@ class CustomManderSerializer(serializers.ModelSerializer):
                   'name_user', 'lastname_user', 'phone_user', 'ismander_user', 'image_id_image',
                   'ishavecar_mander', 'ishavemoto_mander', 'isactive_mander', 'isvalidate_mander',
                   'address_mander', 'cc_mander']
+
+class RequestListSerializer(serializers.ModelSerializer):
+    id_mander = serializers.PrimaryKeyRelatedField(source='requestmanager.mander_id_mander',read_only=True)
+    name_mander = serializers.CharField(source='requestmanager.mander_id_mander.user_id_user.name_user',read_only=True)
+    name_user = serializers.CharField(source='user_id_user.name_user',read_only=True)
+    id_requestmanager = serializers.PrimaryKeyRelatedField(source='requestmanager',read_only=True)
+
+    class Meta:
+        model = Request
+        fields = ['name_user','name_mander','id_mander','id_requestmanager','id_request','user_id_user','detail_request','status_request']
+
+class ManderDetailSerializer(serializers.ModelSerializer):
+    id_user = serializers.PrimaryKeyRelatedField(source='user_id_user', read_only=True)
+    name_user = serializers.CharField(source='user_id_user.name_user', read_only=True)
+    id_account = serializers.PrimaryKeyRelatedField(source='user_id_user.account_id_account', read_only=True)
+    email_account = serializers.CharField(source='user_id_user.account_id_account.email_account', read_only=True)
+    ismander_user = serializers.BooleanField(source='user_id_user.ismander_user', read_only=True)
+    id_vehicle = serializers.PrimaryKeyRelatedField(source='user_id_user.vehicle_set.first', read_only=True)
+    brand_vehicle = serializers.SerializerMethodField()
+    model_vehicle = serializers.SerializerMethodField()
+    color_vehicle = serializers.SerializerMethodField()
+    id_document = serializers.SerializerMethodField()
+    type_document = serializers.SerializerMethodField()
+
+    def get_brand_vehicle(self, obj):
+        if obj.user_id_user.vehicle_set.exists():
+            return obj.user_id_user.vehicle_set.first().brand_vehicle
+        return None
+
+    def get_model_vehicle(self, obj):
+        if obj.user_id_user.vehicle_set.exists():
+            return obj.user_id_user.vehicle_set.first().model_vehicle
+        return None
+
+    def get_color_vehicle(self, obj):
+        if obj.user_id_user.vehicle_set.exists():
+            return obj.user_id_user.vehicle_set.first().color_vehicle
+        return None
+    
+    def get_id_document(self, obj):
+        if obj.user_id_user.document_set.exists():
+            return obj.user_id_user.document_set.first().id_document
+        return None
+
+    def get_type_document(self, obj):
+        if obj.user_id_user.document_set.exists():
+            return obj.user_id_user.document_set.first().type_document
+        return None
+    
+    class Meta:
+        model = Mander
+        fields = ['id_user', 'name_user', 'id_account', 'email_account', 'ismander_user', 'id_vehicle', 'brand_vehicle', 'model_vehicle', 'color_vehicle', 'id_document', 'type_document']

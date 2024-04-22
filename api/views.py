@@ -1,6 +1,6 @@
 from .models import *
 from .serializers import *
-from rest_framework import status, viewsets
+from rest_framework import status, viewsets, generics
 from rest_framework.response import Response
 from rest_framework.exceptions import AuthenticationFailed
 from rest_framework.decorators import api_view
@@ -167,6 +167,8 @@ class ListRequestManagerManderViewSet(viewsets.ViewSet):
         return Response(serializer.data)
 
     def retrieve(self, request, pk=None):
+        status = request.query_params.get('status')
+        print("Valor de 'status' recibido:", status) 
         try:
             requestmanager = Requestmanager.objects.select_related('request_id_request').filter(mander_id_mander=pk)
             serializer = ListRequestManagerManderSerializer(requestmanager, many=True)
@@ -182,6 +184,13 @@ class RequestAllViewset(viewsets.ModelViewSet):
     queryset = RequestDetail.objects.all()
     serializer_class = RequestAllSerializer
 
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        status = self.request.query_params.get('status')
+        if status:
+            queryset = queryset.filter(request_id_request__status_request=status)
+        return queryset
+
 class GetListManderViewSet(viewsets.ViewSet):
     def list(self, request):
         queryset = Mander.objects.select_related('user_id_user')
@@ -196,3 +205,40 @@ class GetListManderViewSet(viewsets.ViewSet):
             return Response(serializer.data)
         else:
             return Response({"message": "User not found"}, status=404)
+
+class RequestListView(generics.ListAPIView):
+    serializer_class = RequestListSerializer
+
+    def get_queryset(self):
+        queryset = Request.objects.prefetch_related('requestmanager')
+        return queryset
+
+class RequestListViewSet(viewsets.ReadOnlyModelViewSet):
+    queryset = Request.objects.prefetch_related('requestmanager')
+    serializer_class = RequestListSerializer
+
+class ManderDetailViewSetxx(viewsets.ViewSet): 
+    def list(self, request):
+        queryset = Mander.objects.select_related('user_id_user')
+        serializer = ManderDetailSerializer(queryset, many=True)
+        return Response(serializer.data)
+
+    def retrieve(self, request, pk=None):
+        try:
+            mander = Mander.objects.select_related('user_id_user').get(pk=pk)
+            serializer = ManderDetailSerializer(mander)
+            return Response(serializer.data)
+        except Mander.DoesNotExist:
+            return Response({"message": "Mander not found"}, status=404)
+        
+class ManderDetailViewSet(viewsets.ReadOnlyModelViewSet):
+    queryset = Mander.objects.select_related('user_id_user__account_id_account').prefetch_related('user_id_user__vehicle_set')
+    serializer_class = ManderDetailSerializer
+
+    def retrieve(self, request, *args, **kwargs):
+        try:
+            mander = self.get_object()
+            serializer = self.get_serializer(mander)
+            return Response(serializer.data)
+        except Mander.DoesNotExist:
+            return Response({"message": "Mander not found"}, status=404)
