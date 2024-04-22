@@ -204,7 +204,7 @@ class ListRequestManagerManderViewSet(viewsets.ViewSet):
 
     def retrieve(self, request, pk=None):
         status = request.query_params.get('status')
-        print("Valor de 'status' recibido:", status) 
+        #print("Valor de 'status' recibido:", status) 
         try:
             requestmanager = Requestmanager.objects.select_related('request_id_request').filter(mander_id_mander=pk)
             serializer = ListRequestManagerManderSerializer(requestmanager, many=True)
@@ -226,6 +226,26 @@ class RequestAllViewset(viewsets.ModelViewSet):
         if status:
             queryset = queryset.filter(request_id_request__status_request=status)
         return queryset
+
+class GetRequestAllViewSet(viewsets.ViewSet):
+    serializer_class = RequestAllSerializer
+
+    def list(self, request):
+        queryset = RequestDetail.objects.all()
+        status = request.query_params.get('status')
+        if status:
+            queryset = queryset.filter(request_id_request__status_request=status)
+        serializer = self.serializer_class(queryset, many=True)
+        return Response(serializer.data)
+    
+    def retrieve(self, request, pk=None):
+        #queryset = RequestDetail.objects.all()
+        id_request = RequestDetail.objects.filter(request_id_request=pk)
+        if id_request:
+            serializer = self.serializer_class(id_request, many=True)
+            return Response(serializer.data)
+        else:
+            return Response({"message": "User not found"}, status=404)
 
 class GetListManderViewSet(viewsets.ViewSet):
     def list(self, request):
