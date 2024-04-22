@@ -4,9 +4,11 @@ from rest_framework import status, viewsets, generics
 from rest_framework.response import Response
 from rest_framework.exceptions import AuthenticationFailed
 from rest_framework.decorators import api_view
+from rest_framework_simplejwt.tokens import RefreshToken
 from django.contrib.auth.hashers import check_password
 from rest_framework.views import APIView
 import jwt, datetime
+from django.conf import settings
 
 class LoginAPIView(APIView):
     def post(self, request):
@@ -39,7 +41,7 @@ class LoginAPIView(APIView):
             'iat': datetime.datetime.utcnow()
         }
 
-        token = jwt.encode(payload, 'manders', algorithm='HS256')
+        token = jwt.encode(payload, settings.SECRET_KEY, algorithm='HS256')
         response = Response()
         response.set_cookie(key='jwt', value=token, httponly=True)
         response.data = {
@@ -48,6 +50,40 @@ class LoginAPIView(APIView):
         response.status_code = status.HTTP_200_OK
 
         return response
+
+class AdminLoginAPIView(APIView):
+    def post(self, request):
+        email = request.data.get('email_account')
+        password = request.data.get('password_account')
+
+        if not email or not password:
+            return Response({'detail': 'Correo electrónico o contraseña faltante'}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            account = Account.objects.get(email_account=email)
+        except Account.DoesNotExist:
+            return Response({'detail': 'Credenciales inválidas'}, status=status.HTTP_401_UNAUTHORIZED)
+
+        if not check_password(password, account.password_account):
+            return Response({'detail': 'Credenciales inválidas'}, status=status.HTTP_401_UNAUTHORIZED)
+
+        if not account.isadmin_account:
+            return Response({'detail': 'No tienes permisos de administrador'}, status=status.HTTP_403_FORBIDDEN)
+
+        # Generar un token JWT personalizado
+        token = generate_custom_jwt(account)
+
+        # Devolver el token en la respuesta
+        return Response({'token': token, 'detail': 'Inicio de sesión exitoso como administrador'}, status=status.HTTP_200_OK)
+
+def generate_custom_jwt(account):
+    payload = {
+        'id': account.id_account,
+        'is_admin': account.isadmin_account,
+        'exp': datetime.datetime.utcnow() + datetime.timedelta(minutes=15),
+        'iat': datetime.datetime.utcnow()
+    }
+    return jwt.encode(payload, settings.SECRET_KEY, algorithm='HS256')
 
 class UserView(APIView):
     def get(self, request):
@@ -59,7 +95,7 @@ class UserView(APIView):
         if not token:
             raise AuthenticationFailed('Unauthenticated! no token available')
         try:
-            payload = jwt.decode(token, 'manders', algorithms=['HS256'])
+            payload = jwt.decode(token, settings.SECRET_KEY, algorithms=['HS256'])
             #expiration_timestamp = payload['exp']
             #expiration_date = datetime.datetime.utcfromtimestamp(expiration_timestamp).strftime('%Y-%m-%d %H:%M:%S')
             #print("Expiration:", expiration_date)

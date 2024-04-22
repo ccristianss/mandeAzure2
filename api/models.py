@@ -19,6 +19,9 @@ class Account(models.Model):
    
     def __str__(self):
         return self.email_account
+    
+    def get_id(self):
+        return self.id_account
     class Meta:
         db_table = 'account'
     
