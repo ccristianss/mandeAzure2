@@ -192,6 +192,13 @@ class RequestManagerViewSet(viewsets.ModelViewSet):
     queryset = Requestmanager.objects.all()
     serializer_class = RequestmanagerSerializer
 
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        id_request = self.request.query_params.get('idrequest')
+        if id_request:
+            queryset = queryset.filter(request_id_request=id_request)
+        return queryset
+
 class VehicleViewSet(viewsets.ModelViewSet):
     queryset = Vehicle.objects.all()
     serializer_class = VehicleSerializer

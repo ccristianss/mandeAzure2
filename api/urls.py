@@ -18,7 +18,7 @@ router.register(r'requestdetails', RequestDetailViewset, basename='requestdetail
 router.register(r'allrequests', RequestAllViewset, basename='allrequests')
 router.register(r'getallrequests', GetRequestAllViewSet, basename='getallrequests')
 router.register(r'getlistmanders', GetListManderViewSet, basename='getlistmanders')
-router.register(r'request_list',RequestListViewSet, basename='request_list')
+router.register(r'request_list', RequestListViewSet, basename='request_list')
 router.register(r'manderdetail', ManderDetailViewSet, basename='manderdetail')
 
 urlpatterns = [
