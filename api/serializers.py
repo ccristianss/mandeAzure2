@@ -65,9 +65,7 @@ class ListUserSerializer(serializers.ModelSerializer):
 
 class ListManderSerializer(serializers.ModelSerializer):
     id_account = serializers.PrimaryKeyRelatedField(source='user_id_user.account_id_account', read_only=True)
-    email_account = serializers.CharField(source='user_id_user.email_account', read_only=True)
-    password_account = serializers.CharField(source='user_id_user.password_account', read_only=True)
-    isadmin_account = serializers.BooleanField(source='user_id_user.isadmin_account', read_only=True)
+    email_account = serializers.CharField(source='user_id_user.account_id_account.email_account', read_only=True)
     id_user = serializers.PrimaryKeyRelatedField(source='user_id_user.id_user', read_only=True)
     name_user = serializers.CharField(source='user_id_user.name_user', read_only=True)
     lastname_user = serializers.CharField(source='user_id_user.lastname_user', read_only=True)
@@ -87,7 +85,7 @@ class ListManderSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Mander
-        fields = ['id_mander', 'id_user', 'id_account', 'email_account', 'password_account', 'isadmin_account',
+        fields = ['id_mander', 'id_user', 'id_account', 'email_account',
                   'name_user', 'lastname_user', 'phone_user', 'ismander_user','image_mander',
                   'ishavecar_mander', 'ishavemoto_mander', 'isactive_mander', 'isvalidate_mander',
                   'address_mander', 'cc_mander', 'documents', 'vehicles']
