@@ -1,8 +1,6 @@
 from django.db import models
 from django.contrib.auth.hashers import make_password
 
-# Create your models here.
-
 class Account(models.Model):
     id_account           = models.AutoField(primary_key=True)
     email_account        = models.CharField(max_length=45, unique=True)
@@ -10,6 +8,7 @@ class Account(models.Model):
     dateregister_account = models.DateTimeField(auto_now_add=True)
     dateupdate_account   = models.DateTimeField(auto_now=True)
     isadmin_account      = models.BooleanField(default=False)
+    isactive_account     = models.BooleanField(default=True)
 
     def save(self, *args, **kwargs):
         
@@ -25,9 +24,6 @@ class Account(models.Model):
     class Meta:
         db_table = 'account'
     
-
-
-
 class User(models.Model):
     id_user            = models.AutoField(primary_key=True)
     account_id_account = models.OneToOneField(Account, on_delete=models.PROTECT, unique=True)
@@ -43,7 +39,6 @@ class User(models.Model):
         return self.name_user
     class Meta:
         db_table = 'user'
-
 
 class Document(models.Model):
     id_document         = models.AutoField(primary_key=True)
@@ -72,7 +67,6 @@ class Document(models.Model):
     class Meta:
         db_table = 'document'
 
-
 class Mander(models.Model):
     id_mander           = models.AutoField(primary_key=True)
     user_id_user        = models.OneToOneField(User, on_delete=models.PROTECT, unique=True)
@@ -91,10 +85,11 @@ class Mander(models.Model):
         db_table = 'mander'
 
 class Service(models.Model):
-    id_service     = models.AutoField(primary_key=True)
-    name_service   = models.CharField(max_length=45)
-    detail_service = models.CharField(max_length=255)
-    image_service  = models.ImageField(upload_to='imgService', null=True, blank=True)
+    id_service          = models.AutoField(primary_key=True)
+    name_service        = models.CharField(max_length=45)
+    detail_service      = models.CharField(max_length=255)
+    image_service       = models.ImageField(upload_to='imgService', null=True, blank=True)
+    isvisible_service   = models.BooleanField(default=True)
 
     def __str__(self):
         return self.name_service
@@ -136,7 +131,7 @@ class Requestmanager(models.Model):
         ('proceso', 'En proceso'),
         ('terminado', 'Terminado'),
     ]
-    status_requestmanager       = models.CharField(max_length=10, choices=STATUS_CHOICES)
+    status_requestmanager       = models.CharField(max_length=10, choices=STATUS_CHOICES, default='espera')
 
     detail_requestmanager       = models.CharField(max_length=255)
     dateregister_requestmanager = models.DateTimeField(auto_now_add=True)
@@ -146,7 +141,6 @@ class Requestmanager(models.Model):
         return self.detail_requestmanager
     class Meta:
         db_table = 'requestmanager'
-
 
 class Vehicle(models.Model):
     id_vehicle          = models.AutoField(primary_key=True)
@@ -166,6 +160,7 @@ class Vehicle(models.Model):
     type_vehicle         = models.CharField(max_length=10, choices=VEHICLE_TYPE_CHOICES)
 
     isverified_vehicle   = models.BooleanField(default=False)
+    isactive_vehicle     = models.BooleanField(default=False)
     dateregister_vehicle = models.DateTimeField(auto_now_add=True)
     dateupdate_vehicle   = models.DateTimeField(auto_now=True)
     dateverified_vehicle = models.DateTimeField(auto_now=True)

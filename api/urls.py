@@ -12,13 +12,16 @@ router.register(r'service', ServiceViewSet)
 router.register(r'request', RequestViewSet)
 router.register(r'request_manager', RequestManagerViewSet)
 router.register(r'vehicle', VehicleViewSet)
-router.register(r'getlistuser', GetListUserViewSet, basename='getlistuser')
+router.register(r'request_detail', RequestDetailViewset, basename='request_detail')
+router.register(r'getlistuser', ListUserViewSet, basename='getlistuser')
+router.register(r'getlistmanders', ListManderViewSet, basename='getlistmanders')
+router.register(r'getlistrequest', ListRequestViewSet, basename='getlistrequest')
+router.register(r'listallrequest', ListAllRequestViewSet, basename='listallrequest')
+router.register(r'postrequest', PostRequestViewset, basename='postrequest')
+
+# Eliminar Routes 
 router.register(r'listrequestmanagermander', ListRequestManagerManderViewSet, basename='listrequestmanagermander')
-router.register(r'requestdetails', RequestDetailViewset, basename='requestdetails')
-router.register(r'allrequests', RequestAllViewset, basename='allrequests')
-router.register(r'getallrequests', GetRequestAllViewSet, basename='getallrequests')
-router.register(r'getlistmanders', GetListManderViewSet, basename='getlistmanders')
-router.register(r'request_list', RequestListViewSet, basename='request_list')
+router.register(r'getallrequestsdetail', GetRequestDetailAllViewSet, basename='getallrequests')
 router.register(r'manderdetail', ManderDetailViewSet, basename='manderdetail')
 
 urlpatterns = [
@@ -27,6 +30,6 @@ urlpatterns = [
     path('api2/admin/login/', AdminLoginAPIView.as_view(), name='admin_login'),
     path('api2/user_data/', UserView.as_view(), name='user_data'),
     path('api2/logout/', LogoutView.as_view(), name='logout'),
-    path('api/estadisticas/', estadisticas, name='estadisticas'),
+    path('api/contadores/', contadores, name='contadores'),
     path('api-auth/', include('rest_framework.urls', namespace='rest_framework')),
 ]

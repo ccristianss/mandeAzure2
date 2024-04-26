@@ -97,7 +97,7 @@ DATABASES = {
   'default': {
     'ENGINE': 'django.db.backends.postgresql',
     #'NAME': 'dbmandaderoapp',
-    'NAME': 'dbv2',
+    'NAME': 'dbv3',
     'USER': 'devingworld',
     'PASSWORD': 'XcQkRjLd32mH',
     'HOST': 'ep-yellow-brook-a5cprtww.us-east-2.aws.neon.tech',
