@@ -148,6 +148,16 @@ class PostRequestSerializer(serializers.ModelSerializer):
 
             return instance
 
+class ListActiveManderSerializer(serializers.ModelSerializer):
+    email_account = serializers.CharField(source='user_id_user.account_id_account.email_account', read_only=True)
+    name_user = serializers.CharField(source='user_id_user.name_user', read_only=True)
+    lastname_user = serializers.CharField(source='user_id_user.lastname_user', read_only=True)
+    phone_user = serializers.CharField(source='user_id_user.phone_user', read_only=True)
+
+    class Meta:
+        model = Mander
+        fields = ['id_mander', 'email_account', 'name_user', 'lastname_user', 'phone_user']
+
 class ListRequestManagerManderSerializer(serializers.ModelSerializer):
     id_request = serializers.PrimaryKeyRelatedField(source='request_id_request', read_only=True)
     detail_request = serializers.CharField(source='request_id_request.detail_request', read_only=True)

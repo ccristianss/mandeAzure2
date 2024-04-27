@@ -286,6 +286,13 @@ class PostRequestViewset(viewsets.ModelViewSet):
             queryset = queryset.filter(request_id_request__status_request=status)
         return queryset
 
+class ListActiveManderViewSet(viewsets.ViewSet):
+    def list(self, request):
+        queryset = Mander.objects.select_related('user_id_user')
+        queryset.filter(isactive_mander=True)
+        serializer = ListActiveManderSerializer(queryset, many=True, context={'request': self.request})
+        return Response(serializer.data)
+
 class ListRequestManagerManderViewSet(viewsets.ViewSet):
     def list(self, request):
         queryset = Requestmanager.objects.select_related('request_id_request')
