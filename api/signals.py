@@ -48,7 +48,7 @@ def send_notification_on_request_update(sender, instance, **kwargs):
     user_id = instance.user_id_user_id
     ref = db.reference(f'Manders/Tokens/{user_id}/token')
     token = ref.get()
-    console.log(token)
+    print(token)
     message = messaging.Message(
         notification=messaging.Notification(
             title='Actualización de solicitud',
