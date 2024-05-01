@@ -31,7 +31,7 @@ SIMPLE_JWT = {
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['localhost', '127.0.0.1', 'manders.azurewebsites.net', 'adminmanders.web.app', 'manders.web.app', 'mandersdev.web.app']
+ALLOWED_HOSTS = ['localhost', '127.0.0.1', 'manders.azurewebsites.net', 'adminmanders.web.app', 'manders.web.app', 'mandersdev.web.app', 'mandaderos.azurewebsites.net']
 
 
 # Application definition
