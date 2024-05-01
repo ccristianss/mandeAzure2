@@ -7,6 +7,7 @@ Django==5.0.2
 django-cors-headers==4.3.1
 djangorestframework==3.14.0
 djangorestframework-simplejwt==5.3.1
+firebase-admin==6.5.0
 idna==3.6
 itypes==1.2.0
 Jinja2==3.1.3
