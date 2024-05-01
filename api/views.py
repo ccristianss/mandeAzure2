@@ -1,3 +1,4 @@
+from firebase_config import db
 from .models import *
 from .serializers import *
 from rest_framework import status, viewsets, generics
@@ -340,3 +341,13 @@ class ManderDetailViewSet(viewsets.ReadOnlyModelViewSet):
             return Response(serializer.data)
         except Mander.DoesNotExist:
             return Response({"message": "Mander not found"}, status=404)
+
+class TokenViewSet(viewsets.ViewSet):
+    def retrieve(self, request, pk=None):        
+        ref = db.reference(f"/Manders/Tokens/{pk}/token")
+        token = ref.get()
+        
+        if token:
+            return Response({"token": token})
+        else:
+            return Response({"message": "Token not found for the user"}, status=404)

@@ -47,7 +47,13 @@ def send_notification_on_request_creation(sender, instance, created, **kwargs):
                 title='Nuevo pedido creado',
                 body=f'Se ha creado un nuevo pedido: {instance.detail_request}'
             ),
-            topic='new_request_popayan'  # Puedes enviar la notificación a un tema específico
+            android=messaging.AndroidConfig(
+                priority='high',
+                notification=messaging.AndroidNotification(
+                    priority='high',
+                ),
+            ),
+            topic='new_request_popayan',   # Puedes enviar la notificación a un tema específico
         )
 
         response = messaging.send(message)
@@ -56,17 +62,25 @@ def send_notification_on_request_creation(sender, instance, created, **kwargs):
 @receiver(post_save, sender=Request)
 def send_notification_on_request_update(sender, instance, **kwargs):
     user_id = instance.user_id_user_id
+    print(user_id)
     ref = db.reference(f'Manders/Tokens/{user_id}/token')
     token = ref.get()
-    print(token)
 
-    
-    message = messaging.Message(
-        notification=messaging.Notification(
-            title='Actualización de solicitud',
-            body=f'Se ha actualizado la solicitud {instance.id_request}',
-        ),
-        topic='new_request_popayan',  # Aquí puedes especificar el tópico al que enviar la notificación
-    )
-    response = messaging.send(message)
-    print('Notification sent:', response)
+    if token:
+        message = messaging.Message(
+            notification=messaging.Notification(
+                title='Actualización de solicitud',
+                body=f'Se ha actualizado la solicitud {instance.detail_request}',
+            ),
+            android=messaging.AndroidConfig(
+                priority='high',
+                notification=messaging.AndroidNotification(
+                    priority='high',
+                ),
+            ),
+            token=token,
+        )
+        response = messaging.send(message)
+        print('Notification sent:', response)
+    else:
+        print(f'No se encontró el token para el usuario con user_id: {user_id}')
