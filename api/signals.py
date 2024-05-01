@@ -1,4 +1,4 @@
-from django.db.models.signals import post_save
+from django.db.models.signals import post_save, post_delete
 from django.dispatch import receiver
 from .models import Requestmanager, Request, Mander, User
 from firebase_config import messaging, db
@@ -27,6 +27,16 @@ def update_user_mander(sender, instance, created, **kwargs):
         related_user = instance.user_id_user
         related_user.ismander_user = True
         related_user.save()
+    else:
+        related_user = instance.user_id_user
+        related_user.ismander_user = True
+        related_user.save()
+
+@receiver(post_delete, sender=Mander)
+def delete_user_mander(sender, instance, **kwargs):
+    related_user = instance.user_id_user
+    related_user.ismander_user = False
+    related_user.save()
 
 @receiver(post_save, sender=Request)
 def send_notification_on_request_creation(sender, instance, created, **kwargs):
