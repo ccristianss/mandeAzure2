@@ -31,7 +31,7 @@ SIMPLE_JWT = {
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['localhost', '127.0.0.1', 'manders.azurewebsites.net', '*']
+ALLOWED_HOSTS = ['localhost', '127.0.0.1', 'manders.azurewebsites.net', 'adminmanders.web.app', 'manders.web.app', 'mandersdev.web.app']
 
 
 # Application definition
@@ -101,12 +101,15 @@ DATABASES = {
     'USER': 'devingworld',
     'PASSWORD': 'XcQkRjLd32mH',
     'HOST': 'ep-yellow-brook-a5cprtww.us-east-2.aws.neon.tech',
+    #'USER': 'adminPostresql',
+    #'PASSWORD': '4dminP0stre$ql9406',
+    #'HOST': 'lacolappdb.postgres.database.azure.com',
     'PORT': '5432',
     'OPTIONS': {
       'sslmode': 'require',
-      'options': 'endpoint=sweet-fire-89711179'
+      #'options': 'endpoint=sweet-fire-89711179'
     },
-    #'DISABLE_SERVER_SIDE_CURSORS': True,
+    'DISABLE_SERVER_SIDE_CURSORS': True,
   }
 }
 
