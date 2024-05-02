@@ -29,11 +29,11 @@ def send_notification_on_request_creation(sender, instance, created, **kwargs):
         body=f'Detalle: {instance.detail_request}'
         idrequest=f'{instance.id_request}'
         topic='new_request_popayan'
-        message = message_to_manders(title, body, topic, idrequest)
+        message = message_to_all_manders(title, body, topic, idrequest)
         response = messaging.send(message)
         print('Notificación enviada:', response)
 
-def message_to_manders(mTitle, mBody, mTopic, mIdRequest):
+def message_to_all_manders(mTitle, mBody, mTopic, mIdRequest):
     message = messaging.Message(
         data={
             'title': mTitle,
@@ -54,8 +54,10 @@ def update_request_status(sender, instance, created, **kwargs):
         idrequest = f'{related_request.id_request}'
         detailrequest = f'{related_request.detail_request}'
         iduser = f'{related_request.user_id_user_id}'
+        idmander = f'{instance.mander_id_mander.user_id_user_id}'
         statusrequest = f'{related_request.status_request}'
         send_notification_user(idrequest, detailrequest, iduser, statusrequest)
+        send_notification_mander(idrequest, detailrequest, idmander, statusrequest)
         
     if instance.status_requestmanager == 'terminado':
         request_instance = instance.request_id_request
@@ -69,14 +71,11 @@ def update_request_status(sender, instance, created, **kwargs):
 
 def send_notification_user(idrequest, detailrequest, iduser, statusrequest):
     user_id = iduser
-    #print(user_id)
-    ref = db.reference(f'Manders/Tokens/{user_id}/token')
-    token = ref.get()
+    token = get_token(user_id)
     if token:
         title = f'Actualización --> {detailrequest}.'
         body = f'Estado: {statusrequest}.'
         message = message_to_user(title, body, token, idrequest)
-        #print(message)
         response = messaging.send(message)
         print('Notification sent:', response)
     else:
@@ -93,3 +92,33 @@ def message_to_user(mTitle, mBody, mtoken, mIdRequest):
         token=mtoken,
     )
     return message
+
+def send_notification_mander(idrequest, detailrequest, idmander, statusrequest):
+    token = get_token(idmander)
+    if token:
+        title = f'Mandado Asignado.'
+        body = f'Detalle: {detailrequest}, estado: {statusrequest}.'
+        message = message_to_mander(title, body, token, idrequest)
+        #print(message)
+        response = messaging.send(message)
+        print('Notification sent:', response)
+    else:
+        print(f'No se encontró el token para el usuario con id: {idmander}')
+
+def message_to_mander(mTitle, mBody, mtoken, mIdRequest):
+    message = messaging.Message(
+        data={
+            'title': mTitle,
+            'body': mBody,
+            'idrequest': mIdRequest,
+            'to': 'mander',
+        },
+        token=mtoken,
+    )
+    return message
+
+def get_token(id):
+    ref = db.reference(f'Manders/Tokens/{id}/token')
+    token = ref.get()
+    print(token)
+    return token
