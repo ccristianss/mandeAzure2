@@ -49,6 +49,7 @@ class RequestDetailSerializer(serializers.ModelSerializer):
 class ListUserSerializer(serializers.ModelSerializer):
     id_account = serializers.PrimaryKeyRelatedField(source='account_id_account', read_only=True)
     email_account = serializers.CharField(source='account_id_account.email_account', read_only=True)
+    isactive_account = serializers.BooleanField(source='account_id_account.isactive_account', read_only=True)
     isadmin_account = serializers.BooleanField(source='account_id_account.isadmin_account', read_only=True)
     def get_image_user(self, obj):
         request = self.context.get('request')        
@@ -61,11 +62,12 @@ class ListUserSerializer(serializers.ModelSerializer):
     
     class Meta:
         model = User
-        fields = ['id_user', 'id_account', 'email_account', 'isadmin_account', 'image_user', 'name_user', 'lastname_user', 'phone_user', 'ismander_user']
+        fields = ['id_user', 'id_account', 'email_account', 'isactive_account', 'isadmin_account', 'image_user', 'name_user', 'lastname_user', 'phone_user', 'ismander_user']
 
 class ListManderSerializer(serializers.ModelSerializer):
     id_account = serializers.PrimaryKeyRelatedField(source='user_id_user.account_id_account', read_only=True)
     email_account = serializers.CharField(source='user_id_user.account_id_account.email_account', read_only=True)
+    isactive_account = serializers.BooleanField(source='user_id_user.account_id_account.isactive_account', read_only=True)
     id_user = serializers.PrimaryKeyRelatedField(source='user_id_user.id_user', read_only=True)
     name_user = serializers.CharField(source='user_id_user.name_user', read_only=True)
     lastname_user = serializers.CharField(source='user_id_user.lastname_user', read_only=True)
@@ -85,7 +87,7 @@ class ListManderSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Mander
-        fields = ['id_mander', 'id_user', 'id_account', 'email_account',
+        fields = ['id_mander', 'id_user', 'id_account', 'email_account', 'isactive_account',
                   'name_user', 'lastname_user', 'phone_user', 'ismander_user','image_mander',
                   'ishavecar_mander', 'ishavemoto_mander', 'isactive_mander', 'isvalidate_mander',
                   'address_mander', 'cc_mander', 'documents', 'vehicles']

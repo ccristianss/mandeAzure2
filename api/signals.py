@@ -28,7 +28,7 @@ def send_notification_on_request_creation(sender, instance, created, **kwargs):
         title='NUEVO MANDADO'
         body=f'Detalle: {instance.detail_request}'
         idrequest=f'{instance.id_request}'
-        topic='new_request_popayan'
+        topic='popayan_new_request'
         message = message_to_all_manders(title, body, topic, idrequest)
         response = messaging.send(message)
         print('Notificación enviada:', response)
