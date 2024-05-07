@@ -49,8 +49,6 @@ class RequestDetailSerializer(serializers.ModelSerializer):
 class ListUserSerializer(serializers.ModelSerializer):
     id_account = serializers.PrimaryKeyRelatedField(source='account_id_account', read_only=True)
     email_account = serializers.CharField(source='account_id_account.email_account', read_only=True)
-    isactive_account = serializers.BooleanField(source='account_id_account.isactive_account', read_only=True)
-    isadmin_account = serializers.BooleanField(source='account_id_account.isadmin_account', read_only=True)
     def get_image_user(self, obj):
         request = self.context.get('request')        
         if request is not None and obj.image_user:
@@ -62,12 +60,13 @@ class ListUserSerializer(serializers.ModelSerializer):
     
     class Meta:
         model = User
-        fields = ['id_user', 'id_account', 'email_account', 'isactive_account', 'isadmin_account', 'image_user', 'name_user', 'lastname_user', 'phone_user', 'ismander_user']
+        fields = ['id_user', 'id_account', 'email_account', 'isactive_user', 'isadmin_user', 'image_user', 
+                  'name_user', 'lastname_user', 'phone_user', 'ismander_user']
 
 class ListManderSerializer(serializers.ModelSerializer):
     id_account = serializers.PrimaryKeyRelatedField(source='user_id_user.account_id_account', read_only=True)
     email_account = serializers.CharField(source='user_id_user.account_id_account.email_account', read_only=True)
-    isactive_account = serializers.BooleanField(source='user_id_user.account_id_account.isactive_account', read_only=True)
+    isactive_user = serializers.BooleanField(source='user_id_user.isactive_user', read_only=True)
     id_user = serializers.PrimaryKeyRelatedField(source='user_id_user.id_user', read_only=True)
     name_user = serializers.CharField(source='user_id_user.name_user', read_only=True)
     lastname_user = serializers.CharField(source='user_id_user.lastname_user', read_only=True)
@@ -87,7 +86,7 @@ class ListManderSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Mander
-        fields = ['id_mander', 'id_user', 'id_account', 'email_account', 'isactive_account',
+        fields = ['id_mander', 'id_user', 'id_account', 'email_account', 'isactive_user',
                   'name_user', 'lastname_user', 'phone_user', 'ismander_user','image_mander',
                   'ishavecar_mander', 'ishavemoto_mander', 'isactive_mander', 'isvalidate_mander',
                   'address_mander', 'cc_mander', 'documents', 'vehicles']
@@ -95,12 +94,23 @@ class ListManderSerializer(serializers.ModelSerializer):
 class ListRequestSerializer(serializers.ModelSerializer):
     id_mander = serializers.PrimaryKeyRelatedField(source='requestmanager.mander_id_mander',read_only=True)
     name_mander = serializers.CharField(source='requestmanager.mander_id_mander.user_id_user.name_user',read_only=True)
+    lastname_mander = serializers.CharField(source='requestmanager.mander_id_mander.user_id_user.lastname_user',read_only=True)
     name_user = serializers.CharField(source='user_id_user.name_user',read_only=True)
+    lastname_user = serializers.CharField(source='user_id_user.lastname_user',read_only=True)
+    phone_user = serializers.CharField(source='user_id_user.phone_user',read_only=True)
     id_requestmanager = serializers.PrimaryKeyRelatedField(source='requestmanager',read_only=True)
+    origin = serializers.CharField(source='requestdetail.origin',read_only=True)
+    originLat = serializers.CharField(source='requestdetail.originLat',read_only=True)
+    originLng = serializers.CharField(source='requestdetail.originLng',read_only=True)
+    destination = serializers.CharField(source='requestdetail.destination',read_only=True)
+    destinationLat = serializers.CharField(source='requestdetail.destinationLat',read_only=True)
+    destinationLng =serializers.CharField(source='requestdetail.destinationLng',read_only=True)
 
     class Meta:
         model = Request
-        fields = ['name_user','name_mander','id_mander','id_requestmanager','id_request','user_id_user','detail_request','status_request']
+        fields = ['name_user', 'lastname_user', 'phone_user', 'name_mander', 'lastname_mander','id_mander','id_requestmanager','id_request',
+                  'user_id_user','detail_request','status_request', 'origin', 'originLat', 'originLng', 
+                  'destination', 'destinationLat', 'destinationLng', 'typevehicle_request', 'ispriority_request', 'dateregister_request', 'dateupdate_request']
 
 class ListAllRequestSerializer(serializers.ModelSerializer):
     requestmanager = RequestManagerSerializer(read_only=True)

@@ -33,11 +33,13 @@ class LoginAPIView(APIView):
         # Verificar si la contraseña coincide
         if not check_password(password, account.password_account):
             # Si la contraseña es correcta, devolver el id_account
-
             return Response({'detail': 'Invalid credentials'}, status=status.HTTP_401_UNAUTHORIZED)
-
+        try:
+            user = User.objects.get(account_id_account=account.id_account)
+        except User.DoesNotExist:
+            return Response({'detail': 'Credenciales inválidas'}, status=status.HTTP_401_UNAUTHORIZED)
         # Verificar si Account isactive_account
-        if not account.isactive_account:
+        if not user.isactive_user:
             return Response({'detail': 'Blocked account'}, status=status.HTTP_403_FORBIDDEN)
         # Si la autenticación es exitosa, devolver el ID de la cuenta
         payload = {
@@ -71,12 +73,15 @@ class AdminLoginAPIView(APIView):
 
         if not check_password(password, account.password_account):
             return Response({'detail': 'Credenciales inválidas'}, status=status.HTTP_401_UNAUTHORIZED)
+        try:
+            user = User.objects.get(account_id_account=account.id_account)
+        except User.DoesNotExist:
+            return Response({'detail': 'Credenciales inválidas'}, status=status.HTTP_401_UNAUTHORIZED)
 
-        if not account.isadmin_account:
+        if not user.isadmin_user:
             return Response({'detail': 'No tienes permisos de administrador'}, status=status.HTTP_403_FORBIDDEN)
 
-        # Generar un token JWT personalizado
-        token = generate_custom_jwt(account)
+        token = generate_custom_jwt(account, user)
 
         #try:
         #    user = User.objects.get(account_id_account=account.id_account)
@@ -90,10 +95,50 @@ class AdminLoginAPIView(APIView):
                          #'lastname_user' : user.lastname_user,
                          'detail': 'Inicio de sesión exitoso como administrador'}, status=status.HTTP_200_OK)
 
-def generate_custom_jwt(account):
+def generate_custom_jwt(account, user):
     payload = {
         'id': account.id_account,
-        'is_admin': account.isadmin_account,
+        'is_admin': user.isadmin_user,
+        'exp': datetime.datetime.utcnow() + datetime.timedelta(days=1),
+        'iat': datetime.datetime.utcnow()
+    }
+    return jwt.encode(payload, settings.SECRET_KEY, algorithm='HS256')
+
+class SuperAdminLoginAPIView(APIView):
+    def post(self, request):
+        email = request.data.get('email_account')
+        password = request.data.get('password_account')
+
+        if not email or not password:
+            return Response({'detail': 'Correo electrónico o contraseña faltante'}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            account = Account.objects.get(email_account=email)
+        except Account.DoesNotExist:
+            return Response({'detail': 'Credenciales inválidas'}, status=status.HTTP_401_UNAUTHORIZED)
+
+        if not check_password(password, account.password_account):
+            return Response({'detail': 'Credenciales inválidas'}, status=status.HTTP_401_UNAUTHORIZED)
+        try:
+            user = User.objects.get(account_id_account=account.id_account)
+        except User.DoesNotExist:
+            return Response({'detail': 'Credenciales inválidas'}, status=status.HTTP_401_UNAUTHORIZED)
+
+        if not user.issuperadmin_user:
+            return Response({'detail': 'No tienes permisos de Super Administrador'}, status=status.HTTP_403_FORBIDDEN)
+
+        token = generate_superad_jwt(account, user)
+
+        return Response({'token': token, 
+                         'id_account': account.id_account,
+                         'name_user' : user.name_user,
+                         'lastname_user' : user.lastname_user,
+                         'detail': 'Inicio de sesión exitoso como Super Administrador'}, status=status.HTTP_200_OK)
+
+def generate_superad_jwt(account, user):
+    payload = {
+        'id': account.id_account,
+        'is_superadmin': user.issuperadmin_user,
         'exp': datetime.datetime.utcnow() + datetime.timedelta(days=1),
         'iat': datetime.datetime.utcnow()
     }

@@ -7,8 +7,6 @@ class Account(models.Model):
     password_account     = models.CharField(max_length=255)
     dateregister_account = models.DateTimeField(auto_now_add=True)
     dateupdate_account   = models.DateTimeField(auto_now=True)
-    isadmin_account      = models.BooleanField(default=False)
-    isactive_account     = models.BooleanField(default=True)
 
     def save(self, *args, **kwargs):
         
@@ -34,6 +32,9 @@ class User(models.Model):
     dateregister_user  = models.DateTimeField(auto_now_add=True)
     dateupdate_user    = models.DateTimeField(auto_now=True)
     ismander_user      = models.BooleanField(default=False)
+    isadmin_user       = models.BooleanField(default=False)
+    isactive_user      = models.BooleanField(default=True)
+    issuperadmin_user  = models.BooleanField(default=False)
 
     def __str__(self):
         return self.name_user
@@ -44,7 +45,7 @@ class Document(models.Model):
     id_document         = models.AutoField(primary_key=True)
     user_id_user        = models.ForeignKey(User, on_delete=models.PROTECT)
     image_document      = models.ImageField(upload_to='imgDocs', null=True, blank=True)
-    isdocument_vehicle  = models.BooleanField()
+    isdocument_vehicle  = models.BooleanField(default=True)
     isverified_document = models.BooleanField(default=False)
 
     DOCUMENT_TYPES = [
@@ -89,7 +90,7 @@ class Service(models.Model):
     name_service        = models.CharField(max_length=45)
     detail_service      = models.CharField(max_length=255)
     image_service       = models.ImageField(upload_to='imgService', null=True, blank=True)
-    isvisible_service   = models.BooleanField(default=True)
+    isvisible_service   = models.BooleanField(default=False)
 
     def __str__(self):
         return self.name_service
@@ -111,8 +112,16 @@ class Request(models.Model):
 
     status_request       = models.CharField(max_length=20, choices=STATUS_CHOICES, default='Pendiente')
 
-    dateregister_request = models.DateTimeField(auto_now_add=True)
-    dateupdate_request   = models.DateTimeField(auto_now=True)
+    VEHICLE_TYPE_CHOICES = [
+        ('none', 'None'),
+        ('bicycle', 'Bicycle'),
+        ('bike', 'Motorcycle'),
+        ('car', 'Car'),
+    ]
+    typevehicle_request     = models.CharField(max_length=10, choices=VEHICLE_TYPE_CHOICES, default='none')
+    ispriority_request      = models.BooleanField(default=False)
+    dateregister_request    = models.DateTimeField(auto_now_add=True)
+    dateupdate_request      = models.DateTimeField(auto_now=True)
 
     def __str__(self):
         return f'Request {self.id_request}: {self.detail_request}'
@@ -132,7 +141,6 @@ class Requestmanager(models.Model):
         ('terminado', 'Terminado'),
     ]
     status_requestmanager       = models.CharField(max_length=10, choices=STATUS_CHOICES, default='espera')
-
     detail_requestmanager       = models.CharField(max_length=255)
     dateregister_requestmanager = models.DateTimeField(auto_now_add=True)
     dateupdate_requestmanager   = models.DateTimeField(auto_now=True)
@@ -144,7 +152,7 @@ class Requestmanager(models.Model):
 
 class Vehicle(models.Model):
     id_vehicle          = models.AutoField(primary_key=True)
-    user_id_user        = models.ForeignKey(User, on_delete=models.PROTECT)
+    user_id_user        = models.OneToOneField(User, on_delete=models.PROTECT)
     image_vehicle       = models.ImageField(upload_to='imgVehicles', null=True, blank=True)
     brand_vehicle       = models.CharField(max_length=20)
     plate_vehicle       = models.CharField(max_length=10, unique=True)
@@ -158,7 +166,6 @@ class Vehicle(models.Model):
         ('car', 'Car'),
     ]
     type_vehicle         = models.CharField(max_length=10, choices=VEHICLE_TYPE_CHOICES)
-
     isverified_vehicle   = models.BooleanField(default=False)
     isactive_vehicle     = models.BooleanField(default=False)
     dateregister_vehicle = models.DateTimeField(auto_now_add=True)
