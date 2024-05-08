@@ -56,7 +56,7 @@ def update_request_status(sender, instance, created, **kwargs):
         iduser = f'{related_request.user_id_user_id}'
         idmander = f'{instance.mander_id_mander.user_id_user_id}'
         statusrequest = f'{related_request.status_request}'
-        send_notification_user(idrequest, detailrequest, iduser, statusrequest)
+        send_notification_user(idrequest, detailrequest, iduser, statusrequest, '')
         send_notification_mander(idrequest, detailrequest, idmander, statusrequest)
         
     if instance.status_requestmanager == 'terminado':
@@ -67,26 +67,28 @@ def update_request_status(sender, instance, created, **kwargs):
         detailrequest = f'{request_instance.detail_request}'
         iduser = f'{request_instance.user_id_user_id}'
         statusrequest = f'{request_instance.status_request}'
-        send_notification_user(idrequest, detailrequest, iduser, statusrequest)
+        imagerequest = f'{instance.image_requestmanager}'
+        send_notification_user(idrequest, detailrequest, iduser, statusrequest, imagerequest)
 
-def send_notification_user(idrequest, detailrequest, iduser, statusrequest):
+def send_notification_user(idrequest, detailrequest, iduser, statusrequest, image):
     user_id = iduser
     token = get_token(user_id)
     if token:
         title = f'Actualización --> {detailrequest}.'
         body = f'Estado: {statusrequest}.'
-        message = message_to_user(title, body, token, idrequest)
+        message = message_to_user(title, body, token, idrequest, image)
         response = messaging.send(message)
         print('Notification sent:', response)
     else:
         print(f'No se encontró el token para el usuario con user_id: {user_id}')
 
-def message_to_user(mTitle, mBody, mtoken, mIdRequest):
+def message_to_user(mTitle, mBody, mtoken, mIdRequest, mImage):
     message = messaging.Message(
         data={
             'title': mTitle,
             'body': mBody,
             'idrequest': mIdRequest,
+            'image': mImage,
             'to': 'user',
         },
         token=mtoken,
@@ -118,10 +120,14 @@ def message_to_mander(mTitle, mBody, mtoken, mIdRequest):
     return message
 
 def get_token(id):
-    ref = db.reference(f'Manders/Tokens/{id}/token')
-    token = ref.get()
-    print(token)
-    return token
+    try:
+        ref = db.reference(f'Manders/Tokens/{id}/token')
+        token = ref.get()
+        print(token)
+        return token
+    except Exception as e:
+        print(f"Error al consultar la base de datos Firebase: {e}")
+        return None
 
 @receiver(post_save, sender=Vehicle)
 def update_user_vehicles(sender, instance, created, **kwargs):
