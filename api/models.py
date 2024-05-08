@@ -152,7 +152,7 @@ class Requestmanager(models.Model):
 
 class Vehicle(models.Model):
     id_vehicle          = models.AutoField(primary_key=True)
-    user_id_user        = models.OneToOneField(User, on_delete=models.PROTECT)
+    user_id_user        = models.ForeignKey(User, on_delete=models.PROTECT)
     image_vehicle       = models.ImageField(upload_to='imgVehicles', null=True, blank=True)
     brand_vehicle       = models.CharField(max_length=20)
     plate_vehicle       = models.CharField(max_length=10, unique=True)

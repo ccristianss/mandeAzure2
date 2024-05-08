@@ -189,12 +189,27 @@ class ManderDetailSerializer(serializers.ModelSerializer):
     id_account = serializers.PrimaryKeyRelatedField(source='user_id_user.account_id_account', read_only=True)
     email_account = serializers.CharField(source='user_id_user.account_id_account.email_account', read_only=True)
     ismander_user = serializers.BooleanField(source='user_id_user.ismander_user', read_only=True)
-    id_vehicle = serializers.PrimaryKeyRelatedField(source='user_id_user.vehicle', read_only=True)
-    brand_vehicle = serializers.CharField(source='user_id_user.vehicle.brand_vehicle', read_only=True)
-    model_vehicle = serializers.CharField(source='user_id_user.vehicle.model_vehicle', read_only=True)
-    color_vehicle = serializers.CharField(source='user_id_user.vehicle.color_vehicle', read_only=True)
+    id_vehicle = serializers.PrimaryKeyRelatedField(source='user_id_user.vehicle_set.first', read_only=True)
+    brand_vehicle = serializers.SerializerMethodField()
+    model_vehicle = serializers.SerializerMethodField()
+    color_vehicle = serializers.SerializerMethodField()
     id_document = serializers.SerializerMethodField()
     type_document = serializers.SerializerMethodField()
+
+    def get_brand_vehicle(self, obj):
+        if obj.user_id_user.vehicle_set.exists():
+            return obj.user_id_user.vehicle_set.first().brand_vehicle
+        return None
+
+    def get_model_vehicle(self, obj):
+        if obj.user_id_user.vehicle_set.exists():
+            return obj.user_id_user.vehicle_set.first().model_vehicle
+        return None
+
+    def get_color_vehicle(self, obj):
+        if obj.user_id_user.vehicle_set.exists():
+            return obj.user_id_user.vehicle_set.first().color_vehicle
+        return None
     
     def get_id_document(self, obj):
         if obj.user_id_user.document_set.exists():

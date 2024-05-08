@@ -376,7 +376,7 @@ class GetRequestDetailAllViewSet(viewsets.ViewSet):
             return Response({"message": "User not found"}, status=404)
         
 class ManderDetailViewSet(viewsets.ReadOnlyModelViewSet):
-    queryset = Mander.objects.select_related('user_id_user__account_id_account').prefetch_related('user_id_user__vehicle')
+    queryset = Mander.objects.select_related('user_id_user__account_id_account').prefetch_related('user_id_user__vehicle_set')
     serializer_class = ManderDetailSerializer
 
     def retrieve(self, request, *args, **kwargs):
