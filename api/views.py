@@ -104,7 +104,7 @@ def generate_custom_jwt(account, user):
     }
     return jwt.encode(payload, settings.SECRET_KEY, algorithm='HS256')
 
-class SuperAdminLoginAPIView(APIView):
+class LoginFrontAPIView(APIView):
     def post(self, request):
         email = request.data.get('email_account')
         password = request.data.get('password_account')
@@ -124,21 +124,43 @@ class SuperAdminLoginAPIView(APIView):
         except User.DoesNotExist:
             return Response({'detail': 'Credenciales inválidas'}, status=status.HTTP_401_UNAUTHORIZED)
 
-        if not user.issuperadmin_user:
-            return Response({'detail': 'No tienes permisos de Super Administrador'}, status=status.HTTP_403_FORBIDDEN)
+        if not (user.issuperadmin_user or user.isadmin_user):
+            return Response({'detail': 'No tienes permisos Administrador'}, status=status.HTTP_403_FORBIDDEN)
 
-        token = generate_superad_jwt(account, user)
+        token = generate_jwt(account)
+        response = Response()
 
-        return Response({'token': token, 
-                         'id_account': account.id_account,
-                         'name_user' : user.name_user,
-                         'lastname_user' : user.lastname_user,
-                         'detail': 'Inicio de sesión exitoso como Super Administrador'}, status=status.HTTP_200_OK)
+        if user.issuperadmin_user:
+            response.set_cookie(key='jwt', value=token, httponly=True)
+            response.data = {
+                'jwt': token,
+                'rol' : 'Superadmin',
+                'detail': 'Inicio de sesión exitoso como Superadministrador'
+            }
+            response.status_code = status.HTTP_200_OK
+            return response
+        elif user.isadmin_user:
+            response.set_cookie(key='jwt', value=token, httponly=True)
+            response.data = {
+                'jwt': token,
+                'rol' : 'Admin',
+                'detail': 'Inicio de sesión exitoso como administrador'
+            }
+            response.status_code = status.HTTP_200_OK
+            return response
+        else:
+            response.data = {
+                'detail': 'Credenciales inválidas',
+                'jwt': ''
+                }
+            response.status_code = status.HTTP_401_UNAUTHORIZED
+            response.delete_cookie('jwt')
+            return response
 
-def generate_superad_jwt(account, user):
+
+def generate_jwt(account):
     payload = {
         'id': account.id_account,
-        'is_superadmin': user.issuperadmin_user,
         'exp': datetime.datetime.utcnow() + datetime.timedelta(days=1),
         'iat': datetime.datetime.utcnow()
     }
@@ -334,9 +356,13 @@ class PostRequestViewset(viewsets.ModelViewSet):
 
 class ListActiveManderViewSet(viewsets.ViewSet):
     def list(self, request):
-        queryset = Mander.objects.select_related('user_id_user')
-        queryset.filter(isactive_mander=True)
+        queryset = Mander.objects.select_related('user_id_user').filter(
+            user_id_user__isactive_user=True,
+            isactive_mander=True,
+            isvalidate_mander=True
+        )
         serializer = ListActiveManderSerializer(queryset, many=True, context={'request': self.request})
+        print(serializer.data)
         return Response(serializer.data)
 
 class ListRequestManagerManderViewSet(viewsets.ViewSet):

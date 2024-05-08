@@ -30,7 +30,7 @@ urlpatterns = [
     path('api/', include(router.urls)),
     path('api2/login/', LoginAPIView.as_view(), name='login'),
     path('api2/admin/login/', AdminLoginAPIView.as_view(), name='admin_login'),
-    path('api2/superadmin/login/', SuperAdminLoginAPIView.as_view(), name='superadmin_login'),
+    path('api2/login2/', LoginFrontAPIView.as_view(), name='login2'),
     path('api2/user_data/', UserView.as_view(), name='user_data'),
     path('api2/logout/', LogoutView.as_view(), name='logout'),
     path('api/contadores/', contadores, name='contadores'),

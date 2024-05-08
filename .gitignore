@@ -2,3 +2,8 @@
 /.vscode
 /database
 env
+*.pyc
+.pyc
+data.html
+encode.py
+firebase_config.py

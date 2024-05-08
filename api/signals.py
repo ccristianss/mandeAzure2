@@ -1,6 +1,6 @@
 from django.db.models.signals import post_save, post_delete
 from django.dispatch import receiver
-from .models import Requestmanager, Request, Mander, User
+from .models import *
 from firebase_config import messaging, db
 import datetime
 
@@ -122,3 +122,9 @@ def get_token(id):
     token = ref.get()
     print(token)
     return token
+
+@receiver(post_save, sender=Vehicle)
+def update_user_vehicles(sender, instance, created, **kwargs):
+    if instance.isactive_vehicle:
+        user_vehicles = Vehicle.objects.filter(user_id_user=instance.user_id_user)
+        user_vehicles.exclude(id_vehicle=instance.id_vehicle).update(isactive_vehicle=False)
