@@ -10,6 +10,7 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.0/ref/settings/
 """
 
+import os
 from pathlib import Path
 from datetime import timedelta
 
@@ -31,7 +32,17 @@ SIMPLE_JWT = {
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['localhost', '127.0.0.1', 'manders.azurewebsites.net', 'adminmanders.web.app', 'manders.web.app', 'mandersdev.web.app', 'mandaderos.azurewebsites.net', 'mandaderos3.azurewebsites.net']
+ALLOWED_HOSTS = [
+    #'*', #Para Trabajar Local
+    #Direcciones Dominio despliegue de Frontend
+    'manders.web.app', #LandingPage
+    'adminmanders.web.app', #Administradores y Superadministradores
+    'mandersdev.web.app', #Pruebas 
+    #Direcciones Servidores Backend
+    'manders.azurewebsites.net', #Backend 1
+    'mandaderos.azurewebsites.net', #Backend 2 -> Se agrego Notificaciones
+    'mandaderos3.azurewebsites.net' #Backend 3 -> Se actualizaron Modelos 
+    ]
 
 
 # Application definition
@@ -94,13 +105,7 @@ WSGI_APPLICATION = 'mande.wsgi.application'
 # https://docs.djangoproject.com/en/5.0/ref/settings/#databases
 
 DATABASES = {
-  'default': {
-    'ENGINE': 'django.db.backends.postgresql',
-    'NAME': 'mdb3',
-    'USER': 'adminmandaderos',
-    'PASSWORD': 'M4nd4d3r0$',
-    'HOST': 'mandaderos.postgres.database.azure.com',
-    'PORT': '5432',
+  'default': {'ENGINE': 'django.db.backends.postgresql', 'NAME': os.getenv("PGDATABASE"), 'USER': os.getenv("PGUSER"), 'PASSWORD': os.getenv("PGPASSWORD"), 'HOST': os.getenv("PGHOST"), 'PORT': os.getenv("PGPORT"),
     'OPTIONS': {
       'sslmode': 'require'
     }
