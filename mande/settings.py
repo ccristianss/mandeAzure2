@@ -106,6 +106,7 @@ WSGI_APPLICATION = 'mande.wsgi.application'
 
 DATABASES = {
   'default': {'ENGINE': 'django.db.backends.postgresql', 'NAME': os.getenv("PGDATABASE"), 'USER': os.getenv("PGUSER"), 'PASSWORD': os.getenv("PGPASSWORD"), 'HOST': os.getenv("PGHOST"), 'PORT': os.getenv("PGPORT"),
+  
     'OPTIONS': {
       'sslmode': 'require'
     }
@@ -156,7 +157,7 @@ STATICFILES_DIRS = [
 STATIC_ROOT = BASE_DIR / "staticfiles"
 
 MEDIA_URL = '/media/'
-MEDIA_ROOT = 'media'
+MEDIA_ROOT = '/home/media'
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.0/ref/settings/#default-auto-field
