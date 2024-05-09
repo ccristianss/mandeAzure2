@@ -422,3 +422,25 @@ class TokenViewSet(viewsets.ViewSet):
             return Response({"token": token})
         else:
             return Response({"message": "Token not found for the user"}, status=404)
+
+class ListAdminViewSet(viewsets.ViewSet):
+    def list(self, request):
+        queryset = User.objects.select_related('account_id_account').filter(
+            isadmin_user=True,
+            issuperadmin_user=False
+            )
+        serializer = ListAdminSerializer(queryset, many=True, context={'request': request})
+        return Response(serializer.data)
+    
+    def retrieve(self, request, pk=None):
+        queryset = User.objects.select_related('account_id_account')
+        user = queryset.filter(
+            account_id_account=pk,
+            isadmin_user=True,
+            issuperadmin_user=False
+            ).first()
+        if user:
+            serializer = ListAdminSerializer(user, context={'request': request})
+            return Response(serializer.data)
+        else:
+            return Response({"message": "User not found"}, status=404)

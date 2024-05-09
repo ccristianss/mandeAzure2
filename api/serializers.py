@@ -224,3 +224,22 @@ class ManderDetailSerializer(serializers.ModelSerializer):
     class Meta:
         model = Mander
         fields = ['id_user', 'name_user', 'id_account', 'email_account', 'ismander_user', 'id_vehicle', 'brand_vehicle', 'model_vehicle', 'color_vehicle', 'id_document', 'type_document']
+
+
+
+class ListAdminSerializer(serializers.ModelSerializer):
+    id_account = serializers.PrimaryKeyRelatedField(source='account_id_account', read_only=True)
+    email_account = serializers.CharField(source='account_id_account.email_account', read_only=True)
+    def get_image_user(self, obj):
+        request = self.context.get('request')        
+        if request is not None and obj.image_user:
+            server_url = request.build_absolute_uri('/')[:-1]
+            image_url = obj.image_user.url
+            full_url = server_url + image_url
+            return full_url
+        return None
+    
+    class Meta:
+        model = User
+        fields = ['id_user', 'id_account', 'email_account', 'isactive_user', 'isadmin_user', 'image_user', 
+                  'name_user', 'lastname_user', 'phone_user', 'ismander_user']
