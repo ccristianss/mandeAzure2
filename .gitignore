@@ -4,6 +4,7 @@
 env
 *.pyc
 .pyc
+/media
 data.html
 encode.py
 firebase_config.py
