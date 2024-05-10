@@ -190,6 +190,8 @@ class UserView(APIView):
             raise AuthenticationFailed('Unauthenticated! Expired')
 
         user = User.objects.filter(account_id_account=payload['id']).first()
+        if not (user.isactive_user):
+            raise AuthenticationFailed('Unauthenticated! Expired')
         serializer = UserSerializer(user)
         return Response(serializer.data)
 
