@@ -25,7 +25,7 @@ class LoginAPIView(APIView):
             account = Account.objects.get(email_account=email)
         except Account.DoesNotExist:
             # Si el usuario no existe, puedes devolver un error
-            return Response({'detail': 'Invalid credentials'}, status=status.HTTP_401_UNAUTHORIZED)
+            return Response({'detail': 'Not Exist Account'}, status=status.HTTP_401_UNAUTHORIZED)
         except Exception as e:
             # Manejar otros errores de base de datos u excepciones
             return Response({'detail': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
@@ -37,7 +37,7 @@ class LoginAPIView(APIView):
         try:
             user = User.objects.get(account_id_account=account.id_account)
         except User.DoesNotExist:
-            return Response({'detail': 'Credenciales inválidas'}, status=status.HTTP_401_UNAUTHORIZED)
+            return Response({'detail': 'Create User Profile'}, status=status.HTTP_401_UNAUTHORIZED)
         # Verificar si Account isactive_account
         if not user.isactive_user:
             return Response({'detail': 'Blocked account'}, status=status.HTTP_403_FORBIDDEN)
@@ -52,7 +52,8 @@ class LoginAPIView(APIView):
         response = Response()
         response.set_cookie(key='jwt', value=token, httponly=True)
         response.data = {
-            'jwt': token
+            'jwt': token,
+            'detail': 'Login successful',
         }
         response.status_code = status.HTTP_200_OK
 
@@ -135,6 +136,9 @@ class LoginFrontAPIView(APIView):
             response.data = {
                 'jwt': token,
                 'rol' : 'Superadmin',
+                'name_user' : user.name_user,
+                'lastname_user' : user.lastname_user,
+                'image_user' : user.image_user,
                 'detail': 'Inicio de sesión exitoso como Superadministrador'
             }
             response.status_code = status.HTTP_200_OK
@@ -144,6 +148,9 @@ class LoginFrontAPIView(APIView):
             response.data = {
                 'jwt': token,
                 'rol' : 'Admin',
+                'name_user' : user.name_user,
+                'lastname_user' : user.lastname_user,
+                'image_user' : user.image_user,
                 'detail': 'Inicio de sesión exitoso como administrador'
             }
             response.status_code = status.HTTP_200_OK
