@@ -21,6 +21,7 @@ router.register(r'listallrequest', ListAllRequestViewSet, basename='listallreque
 router.register(r'postrequest', PostRequestViewset, basename='postrequest')
 router.register(r'getlistactivemanders', ListActiveManderViewSet, basename='getlistactivemanders')
 router.register(r'postuseracount', CreateUserAccountViewset, basename='postuseracount')
+router.register(r'getvehiclemander', VehicleManderUserViewSet, basename='getvehiclemander')
 
 # Eliminar Routes 
 router.register(r'listrequestmanagermander', ListRequestManagerManderViewSet, basename='listrequestmanagermander')

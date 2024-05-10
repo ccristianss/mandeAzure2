@@ -322,6 +322,9 @@ class ListUserViewSet(viewsets.ViewSet):
 class ListManderViewSet(viewsets.ViewSet):
     def list(self, request):
         queryset = Mander.objects.select_related('user_id_user')
+        idmander = request.query_params.get('idmander')
+        if idmander:
+            queryset = queryset.filter(id_mander=idmander)
         serializer = ListManderSerializer(queryset, many=True, context={'request': self.request})
         return Response(serializer.data)
     
@@ -470,3 +473,18 @@ class CreateUserAccountViewset(viewsets.ModelViewSet):
         if iduser:
             queryset = queryset.filter(id_user=iduser)
         return queryset
+
+class VehicleManderUserViewSet(viewsets.ViewSet):
+    def list(self, request):
+        queryset = Vehicle.objects.select_related('user_id_user').filter(isactive_vehicle=True)
+        serializer = VehicleManderUserSerializer(queryset, many=True, context={'request': request})
+        return Response(serializer.data)
+    
+    def retrieve(self, request, pk=None):
+        queryset = Vehicle.objects.select_related('user_id_user').filter(isactive_vehicle=True)
+        mander = queryset.filter(user_id_user__mander__id_mander=pk).first()
+        if mander:
+            serializer = VehicleManderUserSerializer(mander, context={'request': request})
+            return Response(serializer.data)
+        else:
+            return Response({"message": "User not found"}, status=404)

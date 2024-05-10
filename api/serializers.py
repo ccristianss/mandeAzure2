@@ -225,8 +225,6 @@ class ManderDetailSerializer(serializers.ModelSerializer):
         model = Mander
         fields = ['id_user', 'name_user', 'id_account', 'email_account', 'ismander_user', 'id_vehicle', 'brand_vehicle', 'model_vehicle', 'color_vehicle', 'id_document', 'type_document']
 
-
-
 class ListAdminSerializer(serializers.ModelSerializer):
     id_account = serializers.PrimaryKeyRelatedField(source='account_id_account', read_only=True)
     email_account = serializers.CharField(source='account_id_account.email_account', read_only=True)
@@ -255,3 +253,26 @@ class CreateUserAccountSerializer(serializers.ModelSerializer):
         account_instance = Account.objects.create(**account_data)
         user_instance = User.objects.create(account_id_account=account_instance, **validated_data)
         return user_instance
+
+class VehicleManderUserSerializer(serializers.ModelSerializer):
+    name_user = serializers.CharField(source='user_id_user.name_user', read_only=True)
+    lastname_user = serializers.CharField(source='user_id_user.lastname_user', read_only=True)
+    phone_user = serializers.CharField(source='user_id_user.phone_user', read_only=True)
+    address_mander = serializers.CharField(source='user_id_user.mander.address_mander', read_only=True)
+    cc_mander = serializers.CharField(source='user_id_user.mander.cc_mander', read_only=True)
+    id_mander = serializers.PrimaryKeyRelatedField(source='user_id_user.mander.id_mander', read_only=True)
+    image_mander = serializers.SerializerMethodField()
+
+    def get_image_mander(self, obj):
+        request = self.context.get('request')        
+        if request is not None and obj.user_id_user.mander.image_mander:
+            server_url = request.build_absolute_uri('/')[:-1]
+            image_url = obj.user_id_user.mander.image_mander.url
+            full_url = server_url + image_url
+            return full_url
+        return None
+    
+    class Meta:
+        model = Vehicle
+        fields = ['id_vehicle', 'image_vehicle', 'brand_vehicle', 'plate_vehicle', 'model_vehicle', 'color_vehicle', 
+                  'type_vehicle', 'name_user', 'lastname_user', 'phone_user', 'address_mander', 'image_mander', 'cc_mander', 'id_mander']
