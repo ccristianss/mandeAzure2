@@ -243,3 +243,15 @@ class ListAdminSerializer(serializers.ModelSerializer):
         model = User
         fields = ['id_user', 'id_account', 'email_account', 'isactive_user', 'isadmin_user', 'image_user', 
                   'name_user', 'lastname_user', 'phone_user', 'ismander_user']
+
+class CreateUserAccountSerializer(serializers.ModelSerializer):
+    account_id_account = AccountSerializer()
+    class Meta:
+        model = User
+        fields = '__all__'
+
+    def create(self, validated_data):
+        account_data = validated_data.pop('account_id_account')
+        account_instance = Account.objects.create(**account_data)
+        user_instance = User.objects.create(account_id_account=account_instance, **validated_data)
+        return user_instance

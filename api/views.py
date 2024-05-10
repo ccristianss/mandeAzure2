@@ -127,6 +127,12 @@ class LoginFrontAPIView(APIView):
 
         if not (user.issuperadmin_user or user.isadmin_user):
             return Response({'detail': 'No tienes permisos Administrador'}, status=status.HTTP_403_FORBIDDEN)
+        
+        server_url = request.build_absolute_uri('/')[:-1]
+        try:
+            image_user = (server_url +  user.image_user.url )  if user.image_user else '' 
+        except FileNotFoundError:
+            image_user = ""
 
         token = generate_jwt(account)
         response = Response()
@@ -138,7 +144,7 @@ class LoginFrontAPIView(APIView):
                 'rol' : 'Superadmin',
                 'name_user' : user.name_user,
                 'lastname_user' : user.lastname_user,
-                'image_user' : user.image_user,
+                'image_user' : image_user,
                 'detail': 'Inicio de sesión exitoso como Superadministrador'
             }
             response.status_code = status.HTTP_200_OK
@@ -150,7 +156,7 @@ class LoginFrontAPIView(APIView):
                 'rol' : 'Admin',
                 'name_user' : user.name_user,
                 'lastname_user' : user.lastname_user,
-                'image_user' : user.image_user,
+                'image_user' : image_user,
                 'detail': 'Inicio de sesión exitoso como administrador'
             }
             response.status_code = status.HTTP_200_OK
@@ -451,3 +457,14 @@ class ListAdminViewSet(viewsets.ViewSet):
             return Response(serializer.data)
         else:
             return Response({"message": "User not found"}, status=404)
+
+class CreateUserAccountViewset(viewsets.ModelViewSet):
+    queryset = User.objects.all()
+    serializer_class = CreateUserAccountSerializer
+
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        iduser = self.request.query_params.get('iduser')
+        if iduser:
+            queryset = queryset.filter(id_user=iduser)
+        return queryset
