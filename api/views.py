@@ -7,57 +7,55 @@ from rest_framework.exceptions import AuthenticationFailed
 from rest_framework.decorators import api_view
 from rest_framework_simplejwt.tokens import RefreshToken
 from django.contrib.auth.hashers import check_password
+from django.shortcuts import get_object_or_404
 from rest_framework.views import APIView
 import jwt, datetime
 from django.conf import settings
 
 class LoginAPIView(APIView):
     def post(self, request):
-        # Obtener el correo electrónico y la contraseña del cuerpo de la solicitud
         email = request.data.get('email_account')
         password = request.data.get('password_account')
-        if not email or not password:
-            return Response({'detail': 'Missing email or password'}, status=status.HTTP_400_BAD_REQUEST)
 
-        # Buscar un usuario con el mismo correo electrónico
+        if not email or not password:
+            return self.error_response('Missing email or password', status.HTTP_400_BAD_REQUEST)
 
         try:
             account = Account.objects.get(email_account=email)
         except Account.DoesNotExist:
-            # Si el usuario no existe, puedes devolver un error
-            return Response({'detail': 'Not Exist Account'}, status=status.HTTP_401_UNAUTHORIZED)
+            return self.error_response('Not Exist Account', status.HTTP_401_UNAUTHORIZED)
         except Exception as e:
             # Manejar otros errores de base de datos u excepciones
-            return Response({'detail': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
-        # Verificar si la contraseña coincide
+            return self.error_response(str(e), status.HTTP_500_INTERNAL_SERVER_ERROR)
+            
         if not check_password(password, account.password_account):
-            # Si la contraseña es correcta, devolver el id_account
-            return Response({'detail': 'Invalid credentials'}, status=status.HTTP_401_UNAUTHORIZED)
+            return self.error_response('Invalid credentials', status.HTTP_401_UNAUTHORIZED)
+
         try:
             user = User.objects.get(account_id_account=account.id_account)
         except User.DoesNotExist:
-            return Response({'detail': 'Create User Profile'}, status=status.HTTP_401_UNAUTHORIZED)
-        # Verificar si Account isactive_account
+            return self.error_response('Create User Profile', status.HTTP_401_UNAUTHORIZED)
+
         if not user.isactive_user:
-            return Response({'detail': 'Blocked account'}, status=status.HTTP_403_FORBIDDEN)
-        # Si la autenticación es exitosa, devolver el ID de la cuenta
+            return self.error_response('Blocked account', status.HTTP_403_FORBIDDEN)
+
+        token = self.generate_token(account)
+        response = Response({'jwt': token, 'detail': 'Login successful'})
+        response.set_cookie('jwt', token, httponly=True)
+        return response
+
+    def error_response(self, detail, status_code):
+        response = Response({'detail': detail, 'jwt': ''}, status=status_code)
+        response.delete_cookie('jwt')
+        return response
+
+    def generate_token(self, account):
         payload = {
             'id': account.id_account,
             'exp': datetime.datetime.utcnow() + datetime.timedelta(days=1),
             'iat': datetime.datetime.utcnow()
         }
-
-        token = jwt.encode(payload, settings.SECRET_KEY, algorithm='HS256')
-        response = Response()
-        response.set_cookie(key='jwt', value=token, httponly=True)
-        response.data = {
-            'jwt': token,
-            'detail': 'Login successful',
-        }
-        response.status_code = status.HTTP_200_OK
-
-        return response
+        return jwt.encode(payload, settings.SECRET_KEY, algorithm='HS256')
 
 class AdminLoginAPIView(APIView):
     def post(self, request):
