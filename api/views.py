@@ -1,3 +1,4 @@
+from firebase_config import db
 from .models import *
 from .serializers import *
 from rest_framework import status, viewsets, generics
@@ -6,54 +7,55 @@ from rest_framework.exceptions import AuthenticationFailed
 from rest_framework.decorators import api_view
 from rest_framework_simplejwt.tokens import RefreshToken
 from django.contrib.auth.hashers import check_password
+from django.shortcuts import get_object_or_404
 from rest_framework.views import APIView
 import jwt, datetime
 from django.conf import settings
 
 class LoginAPIView(APIView):
     def post(self, request):
-        # Obtener el correo electrónico y la contraseña del cuerpo de la solicitud
         email = request.data.get('email_account')
         password = request.data.get('password_account')
-        if not email or not password:
-            return Response({'detail': 'Missing email or password'}, status=status.HTTP_400_BAD_REQUEST)
 
-        # Buscar un usuario con el mismo correo electrónico
+        if not email or not password:
+            return self.error_response('Missing email or password', status.HTTP_400_BAD_REQUEST)
 
         try:
             account = Account.objects.get(email_account=email)
         except Account.DoesNotExist:
-            # Si el usuario no existe, puedes devolver un error
-            return Response({'detail': 'Invalid credentials'}, status=status.HTTP_401_UNAUTHORIZED)
+            return self.error_response('Not Exist Account', status.HTTP_401_UNAUTHORIZED)
         except Exception as e:
             # Manejar otros errores de base de datos u excepciones
-            return Response({'detail': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
-        # Verificar si la contraseña coincide
+            return self.error_response(str(e), status.HTTP_500_INTERNAL_SERVER_ERROR)
+            
         if not check_password(password, account.password_account):
-            # Si la contraseña es correcta, devolver el id_account
+            return self.error_response('Invalid credentials', status.HTTP_401_UNAUTHORIZED)
 
-            return Response({'detail': 'Invalid credentials'}, status=status.HTTP_401_UNAUTHORIZED)
+        try:
+            user = User.objects.get(account_id_account=account.id_account)
+        except User.DoesNotExist:
+            return self.error_response('Create User Profile', status.HTTP_401_UNAUTHORIZED)
 
-        # Verificar si Account isactive_account
-        if not account.isactive_account:
-            return Response({'detail': 'Blocked account'}, status=status.HTTP_403_FORBIDDEN)
-        # Si la autenticación es exitosa, devolver el ID de la cuenta
+        if not user.isactive_user:
+            return self.error_response('Blocked account', status.HTTP_403_FORBIDDEN)
+
+        token = self.generate_token(account)
+        response = Response({'jwt': token, 'detail': 'Login successful'})
+        response.set_cookie('jwt', token, httponly=True)
+        return response
+
+    def error_response(self, detail, status_code):
+        response = Response({'detail': detail, 'jwt': ''}, status=status_code)
+        response.delete_cookie('jwt')
+        return response
+
+    def generate_token(self, account):
         payload = {
             'id': account.id_account,
             'exp': datetime.datetime.utcnow() + datetime.timedelta(days=1),
             'iat': datetime.datetime.utcnow()
         }
-
-        token = jwt.encode(payload, settings.SECRET_KEY, algorithm='HS256')
-        response = Response()
-        response.set_cookie(key='jwt', value=token, httponly=True)
-        response.data = {
-            'jwt': token
-        }
-        response.status_code = status.HTTP_200_OK
-
-        return response
+        return jwt.encode(payload, settings.SECRET_KEY, algorithm='HS256')
 
 class AdminLoginAPIView(APIView):
     def post(self, request):
@@ -70,12 +72,15 @@ class AdminLoginAPIView(APIView):
 
         if not check_password(password, account.password_account):
             return Response({'detail': 'Credenciales inválidas'}, status=status.HTTP_401_UNAUTHORIZED)
+        try:
+            user = User.objects.get(account_id_account=account.id_account)
+        except User.DoesNotExist:
+            return Response({'detail': 'Credenciales inválidas'}, status=status.HTTP_401_UNAUTHORIZED)
 
-        if not account.isadmin_account:
+        if not user.isadmin_user:
             return Response({'detail': 'No tienes permisos de administrador'}, status=status.HTTP_403_FORBIDDEN)
 
-        # Generar un token JWT personalizado
-        token = generate_custom_jwt(account)
+        token = generate_custom_jwt(account, user)
 
         #try:
         #    user = User.objects.get(account_id_account=account.id_account)
@@ -89,10 +94,84 @@ class AdminLoginAPIView(APIView):
                          #'lastname_user' : user.lastname_user,
                          'detail': 'Inicio de sesión exitoso como administrador'}, status=status.HTTP_200_OK)
 
-def generate_custom_jwt(account):
+def generate_custom_jwt(account, user):
     payload = {
         'id': account.id_account,
-        'is_admin': account.isadmin_account,
+        'is_admin': user.isadmin_user,
+        'exp': datetime.datetime.utcnow() + datetime.timedelta(days=1),
+        'iat': datetime.datetime.utcnow()
+    }
+    return jwt.encode(payload, settings.SECRET_KEY, algorithm='HS256')
+
+class LoginFrontAPIView(APIView):
+    def post(self, request):
+        email = request.data.get('email_account')
+        password = request.data.get('password_account')
+
+        if not email or not password:
+            return Response({'detail': 'Correo electrónico o contraseña faltante'}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            account = Account.objects.get(email_account=email)
+        except Account.DoesNotExist:
+            return Response({'detail': 'Credenciales inválidas'}, status=status.HTTP_401_UNAUTHORIZED)
+
+        if not check_password(password, account.password_account):
+            return Response({'detail': 'Credenciales inválidas'}, status=status.HTTP_401_UNAUTHORIZED)
+        try:
+            user = User.objects.get(account_id_account=account.id_account)
+        except User.DoesNotExist:
+            return Response({'detail': 'Credenciales inválidas'}, status=status.HTTP_401_UNAUTHORIZED)
+
+        if not (user.issuperadmin_user or user.isadmin_user):
+            return Response({'detail': 'No tienes permisos Administrador'}, status=status.HTTP_403_FORBIDDEN)
+        
+        server_url = request.build_absolute_uri('/')[:-1]
+        try:
+            image_user = (server_url +  user.image_user.url )  if user.image_user else '' 
+        except FileNotFoundError:
+            image_user = ""
+
+        token = generate_jwt(account)
+        response = Response()
+
+        if user.issuperadmin_user:
+            response.set_cookie(key='jwt', value=token, httponly=True)
+            response.data = {
+                'jwt': token,
+                'rol' : 'Superadmin',
+                'name_user' : user.name_user,
+                'lastname_user' : user.lastname_user,
+                'image_user' : image_user,
+                'detail': 'Inicio de sesión exitoso como Superadministrador'
+            }
+            response.status_code = status.HTTP_200_OK
+            return response
+        elif user.isadmin_user:
+            response.set_cookie(key='jwt', value=token, httponly=True)
+            response.data = {
+                'jwt': token,
+                'rol' : 'Admin',
+                'name_user' : user.name_user,
+                'lastname_user' : user.lastname_user,
+                'image_user' : image_user,
+                'detail': 'Inicio de sesión exitoso como administrador'
+            }
+            response.status_code = status.HTTP_200_OK
+            return response
+        else:
+            response.data = {
+                'detail': 'Credenciales inválidas',
+                'jwt': ''
+                }
+            response.status_code = status.HTTP_401_UNAUTHORIZED
+            response.delete_cookie('jwt')
+            return response
+
+
+def generate_jwt(account):
+    payload = {
+        'id': account.id_account,
         'exp': datetime.datetime.utcnow() + datetime.timedelta(days=1),
         'iat': datetime.datetime.utcnow()
     }
@@ -109,6 +188,8 @@ class UserView(APIView):
             raise AuthenticationFailed('Unauthenticated! Expired')
 
         user = User.objects.filter(account_id_account=payload['id']).first()
+        if not (user.isactive_user):
+            raise AuthenticationFailed('Unauthenticated! Expired')
         serializer = UserSerializer(user)
         return Response(serializer.data)
 
@@ -239,6 +320,9 @@ class ListUserViewSet(viewsets.ViewSet):
 class ListManderViewSet(viewsets.ViewSet):
     def list(self, request):
         queryset = Mander.objects.select_related('user_id_user')
+        idmander = request.query_params.get('idmander')
+        if idmander:
+            queryset = queryset.filter(id_mander=idmander)
         serializer = ListManderSerializer(queryset, many=True, context={'request': self.request})
         return Response(serializer.data)
     
@@ -288,9 +372,13 @@ class PostRequestViewset(viewsets.ModelViewSet):
 
 class ListActiveManderViewSet(viewsets.ViewSet):
     def list(self, request):
-        queryset = Mander.objects.select_related('user_id_user')
-        queryset.filter(isactive_mander=True)
+        queryset = Mander.objects.select_related('user_id_user').filter(
+            user_id_user__isactive_user=True,
+            isactive_mander=True,
+            isvalidate_mander=True
+        )
         serializer = ListActiveManderSerializer(queryset, many=True, context={'request': self.request})
+        print(serializer.data)
         return Response(serializer.data)
 
 class ListRequestManagerManderViewSet(viewsets.ViewSet):
@@ -340,3 +428,61 @@ class ManderDetailViewSet(viewsets.ReadOnlyModelViewSet):
             return Response(serializer.data)
         except Mander.DoesNotExist:
             return Response({"message": "Mander not found"}, status=404)
+
+class TokenViewSet(viewsets.ViewSet):
+    def retrieve(self, request, pk=None):        
+        ref = db.reference(f"/Manders/Tokens/{pk}/token")
+        token = ref.get()
+        
+        if token:
+            return Response({"token": token})
+        else:
+            return Response({"message": "Token not found for the user"}, status=404)
+
+class ListAdminViewSet(viewsets.ViewSet):
+    def list(self, request):
+        queryset = User.objects.select_related('account_id_account').filter(
+            isadmin_user=True,
+            issuperadmin_user=False
+            )
+        serializer = ListAdminSerializer(queryset, many=True, context={'request': request})
+        return Response(serializer.data)
+    
+    def retrieve(self, request, pk=None):
+        queryset = User.objects.select_related('account_id_account')
+        user = queryset.filter(
+            account_id_account=pk,
+            isadmin_user=True,
+            issuperadmin_user=False
+            ).first()
+        if user:
+            serializer = ListAdminSerializer(user, context={'request': request})
+            return Response(serializer.data)
+        else:
+            return Response({"message": "User not found"}, status=404)
+
+class CreateUserAccountViewset(viewsets.ModelViewSet):
+    queryset = User.objects.all()
+    serializer_class = CreateUserAccountSerializer
+
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        iduser = self.request.query_params.get('iduser')
+        if iduser:
+            queryset = queryset.filter(id_user=iduser)
+        return queryset
+
+class VehicleManderUserViewSet(viewsets.ViewSet):
+    def list(self, request):
+        queryset = Vehicle.objects.select_related('user_id_user').filter(isactive_vehicle=True)
+        serializer = VehicleManderUserSerializer(queryset, many=True, context={'request': request})
+        return Response(serializer.data)
+    
+    def retrieve(self, request, pk=None):
+        queryset = Vehicle.objects.select_related('user_id_user').filter(isactive_vehicle=True)
+        mander = queryset.filter(user_id_user__mander__id_mander=pk).first()
+        if mander:
+            serializer = VehicleManderUserSerializer(mander, context={'request': request})
+            return Response(serializer.data)
+        else:
+            return Response({"message": "User not found"}, status=404)
