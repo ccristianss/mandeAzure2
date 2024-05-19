@@ -61,7 +61,7 @@ class ListUserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ['id_user', 'id_account', 'email_account', 'isactive_user', 'isadmin_user', 'image_user', 
-                  'name_user', 'lastname_user', 'phone_user', 'ismander_user']
+                  'name_user', 'lastname_user', 'phone_user', 'ismander_user', 'issuperadmin_user']
 
 class ListManderSerializer(serializers.ModelSerializer):
     id_account = serializers.PrimaryKeyRelatedField(source='user_id_user.account_id_account', read_only=True)

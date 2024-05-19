@@ -11,6 +11,8 @@ from django.shortcuts import get_object_or_404
 from rest_framework.views import APIView
 import jwt, datetime
 from django.conf import settings
+from django.core.mail import send_mail
+import uuid
 
 class LoginAPIView(APIView):
     def post(self, request):
@@ -486,3 +488,39 @@ class VehicleManderUserViewSet(viewsets.ViewSet):
             return Response(serializer.data)
         else:
             return Response({"message": "User not found"}, status=404)
+        
+class RegisterAPIView(APIView):
+    def post(self, request):
+        email_account = request.data.get('email_account')
+        
+        if Account.objects.filter(email_account=email_account).exists():
+            return Response({'detail': 'El correo electrónico ya está registrado.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        # Crear el código de verificación
+        verification_code = EmailVerification.objects.create(user=email_account)
+        
+        # Enviar el correo electrónico con el código de verificación
+        send_mail(
+            'Código de Verificación de tu Registro',
+            f'Tu código de verificación es: {verification_code.code} \n\n Mandaderos',
+            'cristian.silva@crsi.dev',  # Reemplaza con tu dirección de correo
+            [email_account],
+            fail_silently=False,
+        )
+        
+        return Response({'detail': 'Usuario registrado. Revisa tu correo para el código de verificación.'}, status=status.HTTP_201_CREATED)
+    
+class VerifyEmailAPIView(APIView):
+    def post(self, request):
+        email_account = request.data.get('email_account')
+        code = request.data.get('code')
+        
+        try:
+            verification_code = EmailVerification.objects.get(user=email_account, code=code)
+        except (EmailVerification.DoesNotExist):
+            return Response({'detail': 'Código de verificación inválido.'}, status=status.HTTP_400_BAD_REQUEST)
+        
+        verification_code.delete()
+        
+        return Response({'detail': 'Correo electrónico verificado exitosamente.'}, status=status.HTTP_200_OK)
+
