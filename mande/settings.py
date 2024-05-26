@@ -105,10 +105,8 @@ WSGI_APPLICATION = 'mande.wsgi.application'
 # https://docs.djangoproject.com/en/5.0/ref/settings/#databases
 
 DATABASES = {
-  'default': {'ENGINE': 'django.db.backends.postgresql', 'NAME': os.getenv("PGDATABASE"), 'USER': os.getenv("PGUSER"), 'PASSWORD': os.getenv("PGPASSWORD"), 'HOST': os.getenv("PGHOST"), 'PORT': os.getenv("PGPORT"),
-    'OPTIONS': {
-        'sslmode': 'require'
-        }
+  'default': {'ENGINE': 'django.db.backends.mysql', 'NAME': os.getenv("PGDATABASE"), 'USER': os.getenv("PGUSER"), 'PASSWORD': os.getenv("PGPASSWORD"), 'HOST': os.getenv("PGHOST"), 'PORT': os.getenv("PGPORT"),
+    
     }
 }
 
