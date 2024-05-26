@@ -1,6 +1,9 @@
 from firebase_config import db
 from .models import *
 from .serializers import *
+from django.utils.timezone import now
+from django.db.models import Sum, Count, F, Q
+from django.db.models.functions import TruncDay, TruncMonth
 from rest_framework import status, viewsets, generics
 from rest_framework.response import Response
 from rest_framework.exceptions import AuthenticationFailed
@@ -11,6 +14,8 @@ from django.shortcuts import get_object_or_404
 from rest_framework.views import APIView
 import jwt, datetime
 from django.conf import settings
+from django.core.mail import send_mail
+import uuid
 
 class LoginAPIView(APIView):
     def post(self, request):
@@ -205,28 +210,79 @@ class LogoutView(APIView):
 
 @api_view(['GET'])
 def contadores(request):
-    # Calcular la cantidad total de cada modelo
-    total_users = User.objects.count()
-    total_manders = Mander.objects.count()
+
+    # Obtener la fecha actual
+    today = now().date()
+    
+    # Contadores de usuarios
+    total_users = User.objects.filter(isadmin_user=False, issuperadmin_user=False).count()
+    new_users_today = User.objects.filter(dateregister_user__date=today).count()
+    new_users_by_month = User.objects.filter(dateregister_user__year=today.year).annotate(
+        month=TruncMonth('dateregister_user')
+    ).values('month').annotate(count=Count('id_user')).order_by('month')
+
+    # Contadores de manders
+    total_valid_manders = Mander.objects.filter(isvalidate_mander=True).count()
+    active_valid_manders = Mander.objects.filter(isvalidate_mander=True, isactive_mander=True).count()
+    manders_with_car = Mander.objects.filter(ishavecar_mander=True).count()
+    manders_with_bike = Mander.objects.filter(ishavemoto_mander=True).count()
+
+    # Contadores de requests
     total_requests = Request.objects.count()
+    requests_by_service = Request.objects.values('service_id_service__name_service').annotate(count=Count('id_request'))
+    priority_requests = Request.objects.filter(ispriority_request=True).count()
+    requests_by_status = Request.objects.values('status_request').annotate(count=Count('id_request'))
+    requests_today = Request.objects.filter(dateregister_request__date=today).count()
 
-    # Calcular la cantidad de solicitudes con diferentes estados
-    pending_requests = Request.objects.filter(status_request='Pendiente').count()
-    processing_requests = Request.objects.filter(status_request='Proceso').count()
-    finished_requests = Request.objects.filter(status_request='Finalizado').count()
+    # Filtrar requests por estado Proceso o Finalizado
+    valid_request_ids = Request.objects.filter(
+        Q(status_request='Proceso') | Q(status_request='Finalizado')
+    ).values_list('id_request', flat=True)
 
-    # Calcular la cantidad de manders activos
-    active_manders = Mander.objects.filter(isactive_mander=True).count()
+    # Valor y cantidad de requests por día y por mes
+    requests_and_value_by_day = RequestDetail.objects.filter(
+        request_id_request__in=valid_request_ids,
+        request_id_request__dateregister_request__year=today.year
+    ).annotate(day=TruncDay('request_id_request__dateregister_request')).values('day').annotate(
+        count=Count('id_requestdetail'), 
+        total_value=Sum('price')
+    ).order_by('day')
+
+    requests_and_value_by_month = RequestDetail.objects.filter(
+        request_id_request__in=valid_request_ids,
+        request_id_request__dateregister_request__year=today.year
+    ).annotate(month=TruncMonth('request_id_request__dateregister_request')).values('month').annotate(
+        count=Count('id_requestdetail'), 
+        total_value=Sum('price')
+    ).order_by('month')
+
+    total_requests_value = RequestDetail.objects.filter(
+        request_id_request__in=valid_request_ids
+    ).aggregate(total_value=Sum('price'))
 
     # Crear el diccionario de contadores
     count = {
-        'total_users': total_users,
-        'total_manders': total_manders,
-        'total_requests': total_requests,
-        'pending_requests': pending_requests,
-        'processing_requests': processing_requests,
-        'finished_requests': finished_requests,
-        'active_manders': active_manders,
+        'users': {
+            'total': total_users,
+            'new_today': new_users_today,
+            'new_by_month': list(new_users_by_month),
+        },
+        'manders': {
+            'total_valid': total_valid_manders,
+            'active_valid': active_valid_manders,
+            'with_car': manders_with_car,
+            'with_bike': manders_with_bike,
+        },
+        'requests': {
+            'total': total_requests,
+            'by_service': list(requests_by_service),
+            'priority': priority_requests,
+            'by_status': list(requests_by_status),
+            'today': requests_today,
+            'value_by_day': list(requests_and_value_by_day),
+            'value_by_month': list(requests_and_value_by_month),
+            'total_value': total_requests_value['total_value'],
+        }
     }
 
     return Response(count)    
@@ -304,13 +360,18 @@ class RequestDetailViewset(viewsets.ModelViewSet):
 
 class ListUserViewSet(viewsets.ViewSet):
     def list(self, request):
-        queryset = User.objects.select_related('account_id_account')
+        queryset = User.objects.select_related('account_id_account').filter(
+            isadmin_user=False,
+            issuperadmin_user=False
+        )
         serializer = ListUserSerializer(queryset, many=True, context={'request': request})
         return Response(serializer.data)
     
     def retrieve(self, request, pk=None):
         queryset = User.objects.select_related('account_id_account')
-        user = queryset.filter(account_id_account=pk).first()
+        user = queryset.filter(account_id_account=pk,
+            isadmin_user=False,
+            issuperadmin_user=False).first()
         if user:
             serializer = ListUserSerializer(user, context={'request': request})
             return Response(serializer.data)
@@ -486,3 +547,72 @@ class VehicleManderUserViewSet(viewsets.ViewSet):
             return Response(serializer.data)
         else:
             return Response({"message": "User not found"}, status=404)
+        
+class RegisterAPIView(APIView):
+    def post(self, request):
+        email_account = request.data.get('email_account')
+        
+        if Account.objects.filter(email_account=email_account).exists():
+            return Response({'detail': 'El correo electrónico ya está registrado.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        # Crear el código de verificación
+        verification_code = EmailVerification.objects.create(user=email_account)
+        
+        # Enviar el correo electrónico con el código de verificación
+        send_mail(
+            'Código de Verificación de tu Registro',
+            f'Tu código de verificación es: {verification_code.code} \n\n Mandaderos',
+            'cristian.silva@crsi.dev',  # Reemplaza con tu dirección de correo
+            [email_account],
+            fail_silently=False,
+        )
+        
+        return Response({'detail': 'Usuario registrado. Revisa tu correo para el código de verificación.'}, status=status.HTTP_201_CREATED)
+    
+class VerifyEmailAPIView(APIView):
+    def post(self, request):
+        email_account = request.data.get('email_account')
+        code = request.data.get('code')
+        
+        try:
+            verification_code = EmailVerification.objects.get(user=email_account, code=code)
+        except (EmailVerification.DoesNotExist):
+            return Response({'detail': 'Código de verificación inválido.'}, status=status.HTTP_400_BAD_REQUEST)
+        
+        verification_code.delete()
+        
+        return Response({'detail': 'Correo electrónico verificado exitosamente.'}, status=status.HTTP_200_OK)
+
+class ForgotPasswordAPIView(APIView):
+    def post(self, request):
+        email_account = request.data.get('email_account')
+
+        try:
+            account = Account.objects.get(email_account=email_account)
+        except Account.DoesNotExist:
+            return Response({'detail': 'El correo electrónico no está registrado.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        # Generar una nueva contraseña
+        new_password = self.generate_random_password()
+
+        # Asignar la nueva contraseña al usuario
+        account.password_account = make_password(new_password)
+        account.save()
+
+        # Enviar la nueva contraseña por correo electrónico
+        send_mail(
+            'Recuperación de Contraseña',
+            f'Tu nueva contraseña es: {new_password}',
+            'cristian.silva@crsi.dev',  # Reemplaza con tu dirección de correo
+            [email_account],
+            fail_silently=False,
+        )
+
+        return Response({'detail': 'Se ha enviado una nueva contraseña a tu correo electrónico.'}, status=status.HTTP_200_OK)
+
+    def generate_random_password(self):
+        import secrets
+        import string
+        alphabet = string.ascii_letters + string.digits
+        password = ''.join(secrets.choice(alphabet) for i in range(10))  # Genera una contraseña de 10 caracteres
+        return password

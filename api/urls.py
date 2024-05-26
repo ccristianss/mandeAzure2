@@ -38,4 +38,7 @@ urlpatterns = [
     path('api2/logout/', LogoutView.as_view(), name='logout'),
     path('api/contadores/', contadores, name='contadores'),
     path('api-auth/', include('rest_framework.urls', namespace='rest_framework')),
+    path('api2/register/', RegisterAPIView.as_view(), name='register'),
+    path('api2/verify-email/', VerifyEmailAPIView.as_view(), name='verify-email'),
+    path('api2/forgotpassword/', ForgotPasswordAPIView.as_view(), name='forgotpassword'),
 ]

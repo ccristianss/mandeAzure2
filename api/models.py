@@ -1,9 +1,11 @@
 from django.db import models
 from django.contrib.auth.hashers import make_password
+import random
+import string
 
 class Account(models.Model):
     id_account           = models.AutoField(primary_key=True)
-    email_account        = models.CharField(max_length=45, unique=True)
+    email_account        = models.EmailField(max_length=254, unique=True)
     password_account     = models.CharField(max_length=255)
     dateregister_account = models.DateTimeField(auto_now_add=True)
     dateupdate_account   = models.DateTimeField(auto_now=True)
@@ -108,6 +110,7 @@ class Request(models.Model):
         ('Pendiente', 'Pendiente'),
         ('Proceso', 'Proceso'),
         ('Finalizado', 'Finalizado'),
+        ('Cancelado', 'Cancelado'),
     ]
 
     status_request       = models.CharField(max_length=20, choices=STATUS_CHOICES, default='Pendiente')
@@ -198,3 +201,19 @@ class RequestDetail(models.Model):
         return self.id_requestdetail
     class Meta:
         db_table = 'requestdetail'
+
+class EmailVerification(models.Model):
+    user = models.EmailField(null=False)
+    code = models.CharField(max_length=8, editable=False, unique=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    def save(self, *args, **kwargs):
+        if not self.code:
+            self.code = self.generate_code()
+        super().save(*args, **kwargs)
+
+    @staticmethod
+    def generate_code():
+        characters = string.ascii_letters + string.digits
+        return ''.join(random.choice(characters) for _ in range(8))
+    class Meta:
+        db_table = 'emailverification'
