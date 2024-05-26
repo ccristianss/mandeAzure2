@@ -5,7 +5,7 @@ import string
 
 class Account(models.Model):
     id_account           = models.AutoField(primary_key=True)
-    email_account        = models.CharField(max_length=45, unique=True)
+    email_account        = models.EmailField(max_length=254, unique=True)
     password_account     = models.CharField(max_length=255)
     dateregister_account = models.DateTimeField(auto_now_add=True)
     dateupdate_account   = models.DateTimeField(auto_now=True)
@@ -110,6 +110,7 @@ class Request(models.Model):
         ('Pendiente', 'Pendiente'),
         ('Proceso', 'Proceso'),
         ('Finalizado', 'Finalizado'),
+        ('Cancelado', 'Cancelado'),
     ]
 
     status_request       = models.CharField(max_length=20, choices=STATUS_CHOICES, default='Pendiente')
