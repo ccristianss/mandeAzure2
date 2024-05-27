@@ -32,9 +32,9 @@ def send_notification_on_request_creation(sender, instance, created, **kwargs):
         # Notification to all manders
         message = messaging.Message(
             data={
-                'title': title,
-                'body': body,
-                'idrequest': idrequest,
+                'title': str(title),
+                'body': str(body),
+                'idrequest': str(idrequest),
                 'to': 'mander',
             },
             topic=topic,
@@ -47,11 +47,11 @@ def send_notification_on_request_creation(sender, instance, created, **kwargs):
         if admin_token:
             admin_message = messaging.Message(
                 data={
-                    'title': title,
-                    'body': body,
-                    'idrequest': idrequest,
-                    'ispriority': ispriority,
-                    'typevehicle': typevehicle,
+                    'title': str(title),
+                    'body': str(body),
+                    'idrequest': str(idrequest),
+                    'ispriority': str(ispriority),
+                    'typevehicle': str(typevehicle),
                     'to': 'admin',
                 },
                 token=admin_token,
@@ -90,10 +90,10 @@ def send_notification_user(idrequest, detailrequest, iduser, statusrequest, imag
         body = f'Estado: {statusrequest}.'
         message = messaging.Message(
             data={
-                'title': title,
-                'body': body,
-                'idrequest': idrequest,
-                'image': image,
+                'title': str(title),
+                'body': str(body),
+                'idrequest': str(idrequest),
+                'image': str(image),
                 'to': 'user',
             },
             token=token,
@@ -110,9 +110,9 @@ def send_notification_mander(idrequest, detailrequest, idmander, statusrequest):
         body = f'Detalle: {detailrequest}, estado: {statusrequest}.'
         message = messaging.Message(
             data={
-                'title': title,
-                'body': body,
-                'idrequest': idrequest,
+                'title': str(title),
+                'body': str(body),
+                'idrequest': str(idrequest),
                 'to': 'mander',
             },
             token=token,
