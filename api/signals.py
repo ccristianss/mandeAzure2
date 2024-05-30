@@ -24,17 +24,17 @@ def send_notification_on_request_creation(sender, instance, created, **kwargs):
     if created:
         title='NUEVO MANDADO'
         body=f'Detalle: {instance.detail_request}'
-        idrequest=f'{instance.id_request}'
-        ispriority=f'{instance.ispriority_request}'
-        typevehicle=f'{instance.typevehicle_request}'
+        idrequest=str(instance.id_request)
+        ispriority=str(instance.ispriority_request)
+        typevehicle=str(instance.typevehicle_request)
         topic='popayan_new_request'
         
         # Notification to all manders
         message = messaging.Message(
             data={
-                'title': str(title),
-                'body': str(body),
-                'idrequest': str(idrequest),
+                'title': title,
+                'body': body,
+                'idrequest': idrequest,
                 'to': 'mander',
             },
             topic=topic,
@@ -47,11 +47,11 @@ def send_notification_on_request_creation(sender, instance, created, **kwargs):
         if admin_token:
             admin_message = messaging.Message(
                 data={
-                    'title': str(title),
-                    'body': str(body),
-                    'idrequest': str(idrequest),
-                    'ispriority': str(ispriority),
-                    'typevehicle': str(typevehicle),
+                    'title': title,
+                    'body': body,
+                    'idrequest': idrequest,
+                    'ispriority': ispriority,
+                    'typevehicle': typevehicle,
                     'to': 'admin',
                 },
                 token=admin_token,
@@ -75,9 +75,9 @@ def update_request_status(sender, instance, created, **kwargs):
         notify_users_and_manders(related_request, None, 'Finalizado', instance.image_requestmanager)
 
 def notify_users_and_manders(request_instance, mander_user_id, status, image):
-    idrequest = f'{request_instance.id_request}'
-    detailrequest = f'{request_instance.detail_request}'
-    iduser = f'{request_instance.user_id_user_id}'
+    idrequest = str(request_instance.id_request)
+    detailrequest = str(request_instance.detail_request)
+    iduser = str(request_instance.user_id_user_id)
     
     send_notification_user(idrequest, detailrequest, iduser, status, image)
     if mander_user_id:
@@ -90,9 +90,9 @@ def send_notification_user(idrequest, detailrequest, iduser, statusrequest, imag
         body = f'Estado: {statusrequest}.'
         message = messaging.Message(
             data={
-                'title': str(title),
-                'body': str(body),
-                'idrequest': str(idrequest),
+                'title': title,
+                'body': body,
+                'idrequest': idrequest,
                 'image': str(image),
                 'to': 'user',
             },
@@ -110,9 +110,9 @@ def send_notification_mander(idrequest, detailrequest, idmander, statusrequest):
         body = f'Detalle: {detailrequest}, estado: {statusrequest}.'
         message = messaging.Message(
             data={
-                'title': str(title),
-                'body': str(body),
-                'idrequest': str(idrequest),
+                'title': title,
+                'body': body,
+                'idrequest': idrequest,
                 'to': 'mander',
             },
             token=token,
