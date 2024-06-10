@@ -15,6 +15,8 @@ from rest_framework.views import APIView
 import jwt, datetime
 from django.conf import settings
 from django.core.mail import send_mail
+from django.template.loader import render_to_string
+from django.utils.html import strip_tags
 import uuid
 
 class LoginAPIView(APIView):
@@ -559,13 +561,13 @@ class RegisterAPIView(APIView):
         verification_code = EmailVerification.objects.create(user=email_account)
         
         # Enviar el correo electrónico con el código de verificación
-        send_mail(
-            'Código de Verificación de tu Registro',
-            f'Tu código de verificación es: {verification_code.code} \n\n Mandaderos',
-            'cristian.silva@crsi.dev',  # Reemplaza con tu dirección de correo
-            [email_account],
-            fail_silently=False,
-        )
+        subject = 'Código de Verificación de tu Registro'
+        html_message = render_to_string('verification_email.html', {'verification_code': verification_code.code})
+        plain_message = strip_tags(html_message)
+        from_email = 'cristian.silva@crsi.dev'  # Reemplaza con tu dirección de correo
+        to = email_account
+
+        send_mail(subject, plain_message, from_email, [to], html_message=html_message, fail_silently=False)
         
         return Response({'detail': 'Usuario registrado. Revisa tu correo para el código de verificación.'}, status=status.HTTP_201_CREATED)
     
@@ -600,13 +602,13 @@ class ForgotPasswordAPIView(APIView):
         account.save()
 
         # Enviar la nueva contraseña por correo electrónico
-        send_mail(
-            'Recuperación de Contraseña',
-            f'Tu nueva contraseña es: {new_password}',
-            'cristian.silva@crsi.dev',  # Reemplaza con tu dirección de correo
-            [email_account],
-            fail_silently=False,
-        )
+        subject = 'Recuperación de Contraseña'
+        html_message = render_to_string('password_reset_email.html', {'new_password': new_password})
+        plain_message = strip_tags(html_message)
+        from_email = 'cristian.silva@crsi.dev'  # Reemplaza con tu dirección de correo
+        to = email_account
+
+        send_mail(subject, plain_message, from_email, [to], html_message=html_message, fail_silently=False)
 
         return Response({'detail': 'Se ha enviado una nueva contraseña a tu correo electrónico.'}, status=status.HTTP_200_OK)
 

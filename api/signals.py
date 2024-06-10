@@ -39,8 +39,11 @@ def send_notification_on_request_creation(sender, instance, created, **kwargs):
             },
             topic=topic,
         )
-        response = messaging.send(message)
-        print('Notificación enviada:', response)
+        try:
+            response = messaging.send(message)
+            print('Notificación enviada:', response)
+        except messaging.UnregisteredError:
+            print('Token no registrado para mander. Eliminando token...')
 
         # Notification to admin
         admin_token = get_token('admin')
@@ -56,8 +59,11 @@ def send_notification_on_request_creation(sender, instance, created, **kwargs):
                 },
                 token=admin_token,
             )
-            admin_response = messaging.send(admin_message)
-            print('Notificación enviada a admin:', admin_response)
+            try:
+                admin_response = messaging.send(admin_message)
+                print('Notificación enviada a admin:', admin_response)
+            except messaging.UnregisteredError:
+                print('Token no registrado para admin. Eliminando token...')
         else:
             print('No se encontró el token para admin')
 
@@ -98,8 +104,12 @@ def send_notification_user(idrequest, detailrequest, iduser, statusrequest, imag
             },
             token=token,
         )
-        response = messaging.send(message)
-        print('Notification sent:', response)
+        try:
+            response = messaging.send(message)
+            print('Notification sent:', response)
+        except messaging.UnregisteredError:
+            print(f'Token no registrado para el usuario con user_id: {iduser}. Eliminando token...')
+            delete_token(iduser)
     else:
         print(f'No se encontró el token para el usuario con user_id: {iduser}')
 
@@ -117,8 +127,12 @@ def send_notification_mander(idrequest, detailrequest, idmander, statusrequest):
             },
             token=token,
         )
-        response = messaging.send(message)
-        print('Notification sent:', response)
+        try:
+            response = messaging.send(message)
+            print('Notification sent:', response)
+        except messaging.UnregisteredError:
+            print(f'Token no registrado para el mander con user_id: {idmander}. Eliminando token...')
+            delete_token(idmander)
     else:
         print(f'No se encontró el token para el usuario con id: {idmander}')
 
@@ -132,6 +146,14 @@ def get_token(id):
         print(f"Error al consultar la base de datos Firebase: {e}")
         return None
 
+def delete_token(id):
+    try:
+        ref = db.reference(f'Manders/Tokens/{id}')
+        ref.delete()
+        print(f'Token eliminado para el id: {id}')
+    except Exception as e:
+        print(f"Error al eliminar el token en Firebase: {e}")
+        
 @receiver(post_save, sender=Vehicle)
 def update_user_vehicles(sender, instance, created, **kwargs):
     if instance.isactive_vehicle:
