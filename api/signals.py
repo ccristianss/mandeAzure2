@@ -75,6 +75,9 @@ def update_request_status(sender, instance, created, **kwargs):
         related_request.save()
         notify_users_and_manders(related_request, instance.mander_id_mander.user_id_user_id, 'Proceso', '')
         
+    elif instance.status_requestmanager == 'proceso':
+        notify_users_and_manders(related_request, None, 'Proceso', instance.imageprocess_requestmanager)
+        
     elif instance.status_requestmanager == 'terminado':
         related_request.status_request = 'Finalizado'
         related_request.save()
