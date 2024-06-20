@@ -136,6 +136,7 @@ class Requestmanager(models.Model):
     id_requestmanager    = models.AutoField(primary_key=True)
     request_id_request   = models.OneToOneField(Request, on_delete=models.PROTECT, unique=True)
     image_requestmanager = models.ImageField(upload_to='imgRequestmanager', null=True, blank=True)
+    imageprocess_requestmanager = models.ImageField(upload_to='imgRequestmanager', null=True, blank=True)
     mander_id_mander     = models.ForeignKey(Mander, on_delete=models.PROTECT)
 
     STATUS_CHOICES = [
