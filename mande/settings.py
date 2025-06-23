@@ -16,7 +16,7 @@ from datetime import timedelta
 from dotenv import load_dotenv
 
 # Carga las variables de entorno desde el archivo .env
-load_dotenv()
+#load_dotenv()
 
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -36,7 +36,13 @@ SIMPLE_JWT = {
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
-
+if DEBUG: # Asume que DEBUG es True en desarrollo y False en producción
+    try:
+        from dotenv import load_dotenv
+        load_dotenv()
+    except ImportError:
+        # Puedes añadir un log aquí si quieres saber si dotenv no se encontró
+        print("python-dotenv not found, assuming production or not needed.")
 ALLOWED_HOSTS = [
     '*', #Para Trabajar Local
     #Direcciones Dominio despliegue de Frontend
