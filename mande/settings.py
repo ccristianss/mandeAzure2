@@ -13,6 +13,11 @@ https://docs.djangoproject.com/en/5.0/ref/settings/
 import os
 from pathlib import Path
 from datetime import timedelta
+from dotenv import load_dotenv
+
+# Carga las variables de entorno desde el archivo .env
+load_dotenv()
+
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -33,15 +38,15 @@ SIMPLE_JWT = {
 DEBUG = True
 
 ALLOWED_HOSTS = [
-    #'*', #Para Trabajar Local
+    '*', #Para Trabajar Local
     #Direcciones Dominio despliegue de Frontend
-    'manders.web.app', #LandingPage
-    'adminmanders.web.app', #Administradores y Superadministradores
-    'mandersdev.web.app', #Pruebas 
+    #'manders.web.app', #LandingPage
+    #'adminmanders.web.app', #Administradores y Superadministradores
+    #'mandersdev.web.app', #Pruebas 
     #Direcciones Servidores Backend
-    'manders.azurewebsites.net', #Backend 1
-    'mandaderos.azurewebsites.net', #Backend 2 -> Se agrego Notificaciones
-    'mandaderos3.azurewebsites.net' #Backend 3 -> Se actualizaron Modelos 
+    #'manders.azurewebsites.net', #Backend 1
+    #'mandaderos.azurewebsites.net', #Backend 2 -> Se agrego Notificaciones
+    #'mandaderos3.azurewebsites.net' #Backend 3 -> Se actualizaron Modelos 
     ]
 
 
@@ -107,7 +112,7 @@ WSGI_APPLICATION = 'mande.wsgi.application'
 # https://docs.djangoproject.com/en/5.0/ref/settings/#databases
 
 DATABASES = {
-  'default': {'ENGINE': 'django.db.backends.mysql', 'NAME': os.getenv("PGDATABASE"), 'USER': os.getenv("PGUSER"), 'PASSWORD': os.getenv("PGPASSWORD"), 'HOST': os.getenv("PGHOST"), 'PORT': os.getenv("PGPORT"),
+  'default': {'ENGINE': 'django.db.backends.postgresql', 'NAME': os.getenv("PGDATABASE"), 'USER': os.getenv("PGUSER"), 'PASSWORD': os.getenv("PGPASSWORD"), 'HOST': os.getenv("PGHOST"), 'PORT': os.getenv("PGPORT"),
     }
 }
 
