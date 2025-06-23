@@ -43,6 +43,7 @@ if DEBUG: # Asume que DEBUG es True en desarrollo y False en producción
     except ImportError:
         # Puedes añadir un log aquí si quieres saber si dotenv no se encontró
         print("python-dotenv not found, assuming production or not needed.")
+
 ALLOWED_HOSTS = [
     '*', #Para Trabajar Local
     #Direcciones Dominio despliegue de Frontend
@@ -72,7 +73,6 @@ LOCAL_APPS = [
 ]
 
 THIRD_APPS = [
-    'coreapi',
     'rest_framework',
     'corsheaders',
 ]
