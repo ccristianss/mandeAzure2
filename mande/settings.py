@@ -35,7 +35,7 @@ SIMPLE_JWT = {
 
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 if DEBUG: # Asume que DEBUG es True en desarrollo y False en producción
     try:
         from dotenv import load_dotenv
